@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ousta | أُسطى — منصة الصيانة المنزلية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@300;400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  /* ===== Talabat-inspired palette =====
+     Primary orange, near-black ink, clean white surfaces, a touch of amber accent. */
+  --ink:#1A1A1A;
+  --paper:#FFFFFF;
+  --paper-2:#F6F6F8;
+  --navy:#1A1A1A;      /* dark surface (was navy, now Talabat-style near-black) */
+  --navy-2:#2B2B2D;
+  --brass:#FF5A00;     /* primary orange */
+  --brass-2:#FF7A2E;   /* hover orange */
+  --amber:#FFC22E;     /* secondary amber accent */
+  --green:#1DB86A;
+  --red:#E5484D;
+  --line: rgba(26,26,26,0.12);
+  --shadow: 0 10px 26px rgba(26,26,26,0.10);
+  --radius: 14px;
+  --disp: 'Cairo', sans-serif;
+  --body: 'Tajawal', sans-serif;
+  --mono: 'IBM Plex Sans Arabic', sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family: var(--body);
+  background: var(--paper-2);
+  color: var(--ink);
+  min-height:100vh;
+}
+::selection{ background: var(--amber); color: var(--ink); }
+a{color:inherit;}
+button{ font-family:inherit; cursor:pointer; border:none; }
+input, textarea, select{ font-family:inherit; }
+:focus-visible{ outline: 3px solid var(--brass); outline-offset:2px; }
+
+/* ===== Login Screen ===== */
+#loginScreen{
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(255,194,46,0.25), transparent),
+    linear-gradient(160deg, var(--brass) 0%, #FF3D00 55%, #1A1A1A 55%, #1A1A1A 100%);
+  position:relative; overflow:hidden;
+}
+.login-card{
+  width:100%; max-width:440px; background:#fff; border-radius:20px; box-shadow: 0 24px 60px rgba(0,0,0,0.30);
+  padding:32px 30px 28px; position:relative; z-index:2;
+}
+.login-logo-row{ display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:22px; }
+.login-logo-img{ width:76px; height:76px; border-radius:18px; object-fit:cover; box-shadow:0 8px 20px rgba(255,90,0,0.30); }
+.login-wordmark{ font-family:var(--disp); font-weight:900; font-size:30px; letter-spacing:0.5px; color:var(--ink); direction:ltr; }
+.login-wordmark span{ color: var(--brass); }
+.login-tagline{ font-size:13.5px; color:#7a7a7a; }
+.login-tabs{ display:flex; background:var(--paper-2); border-radius:12px; padding:4px; margin-bottom:20px; }
+.login-tab{
+  flex:1; padding:10px; border-radius:9px; font-weight:700; font-size:14px; color:#6b6b6b; text-align:center;
+  transition: all .18s;
+}
+.login-tab.active{ background:var(--ink); color:#fff; }
+.account-choice{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+.acct-tile{
+  border:2px solid var(--line); border-radius:14px; padding:18px 10px; text-align:center; background:#fff;
+  transition: all .18s ease; display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.acct-tile i{ font-size:26px; color:var(--brass); }
+.acct-tile .t{ font-weight:800; font-size:14.5px; }
+.acct-tile .s{ font-size:11.5px; color:#8a8a8a; }
+.acct-tile:hover{ border-color:var(--brass); transform:translateY(-2px); }
+.acct-tile.selected{ border-color:var(--brass); background:#FFF4EC; box-shadow: var(--shadow); }
+.login-field{ margin-bottom:12px; }
+.login-field label{ display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:#4a4a4a; }
+.login-field .input-ic{ position:relative; }
+.login-field .input-ic i{ position:absolute; top:50%; transform:translateY(-50%); right:13px; color:#9a9a9a; font-size:13.5px; }
+.login-field input, .login-field select{
+  width:100%; padding:11px 38px 11px 12px; border:1.5px solid var(--line); border-radius:10px; font-size:14px; background:#fbfbfb;
+}
+.login-submit{ width:100%; padding:13px; border-radius:11px; background:var(--brass); color:#fff; font-weight:800; font-size:15px; margin-top:6px; }
+.login-submit:hover{ background:var(--brass-2); }
+.login-submit:disabled{ background:#f0c7ab; cursor:not-allowed; }
+.login-foot{ text-align:center; margin-top:16px; font-size:12.5px; color:#9a9a9a; }
+.login-foot button{ background:none; color:var(--brass); font-weight:700; }
+.login-admin-link{ display:block; text-align:center; margin-top:10px; font-size:11.5px; color:#b8b8b8; }
+
+/* ===== Topbar ===== */
+.topbar{
+  background: var(--ink);
+  color: #fff;
+  padding: 12px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  position: sticky; top:0; z-index:50;
+  border-bottom: 3px solid var(--brass);
+}
+.brand{ display:flex; align-items:center; gap:10px; }
+.brand-mark{
+  width:40px; height:40px; border-radius:11px; overflow:hidden; background:#fff;
+  display:flex; align-items:center; justify-content:center; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);
+  flex-shrink:0;
+}
+.brand-mark img{ width:100%; height:100%; object-fit:cover; }
+.brand-text{ font-family:var(--disp); font-weight:900; font-size:21px; letter-spacing:0.4px; direction:ltr; }
+.brand-text span{ color:var(--brass); }
+.brand-sub{ font-size:11px; color: rgba(255,255,255,0.55); font-weight:400; margin-top:-2px; }
+
+.role-switch{
+  display:flex; background: rgba(255,255,255,0.07); border-radius:999px; padding:4px; gap:2px;
+  border:1px solid rgba(255,255,255,0.12);
+}
+.role-btn{
+  background:transparent; color: rgba(255,255,255,0.65);
+  padding:8px 18px; border-radius:999px; font-size:14px; font-weight:600;
+  transition: all .2s ease; white-space:nowrap; display:flex; align-items:center; gap:6px;
+}
+.role-btn.active{ background: var(--brass); color:#fff; }
+.role-btn:not(.active):hover{ color:#fff; background: rgba(255,255,255,0.1); }
+
+.topbar-right{ display:flex; align-items:center; gap:12px; }
+.bell-wrap{ position:relative; }
+.bell-btn{
+  background: rgba(255,255,255,0.08); color:#fff; width:38px;height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:15px;
+  border:1px solid rgba(255,255,255,0.12);
+}
+.bell-dot{
+  position:absolute; top:-2px; left:-2px; background: var(--red); color:#fff; font-size:10px;
+  border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center;
+  font-weight:700; border:2px solid var(--ink);
+}
+.profile-wrap{ position:relative; }
+.profile-btn{
+  display:flex; align-items:center; gap:8px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);
+  border-radius:999px; padding:5px 8px 5px 12px; color:#fff;
+}
+.profile-btn:hover{ background: rgba(255,255,255,0.15); }
+.profile-ic{
+  width:30px; height:30px; border-radius:50%; background: var(--brass); display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#fff; flex-shrink:0;
+}
+.profile-name{ font-size:13.5px; font-weight:700; }
+.profile-btn .fa-chevron-down{ font-size:10px; opacity:0.7; }
+.profile-menu{
+  position:absolute; top:calc(100% + 10px); left:0; background:#fff; color:var(--ink); border-radius:12px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.20); min-width:190px; overflow:hidden; z-index:80; border:1px solid var(--line);
+}
+.profile-menu button{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:right; padding:12px 14px; font-size:14px; font-weight:600; background:#fff;
+}
+.profile-menu button:hover{ background:var(--paper-2); }
+.profile-menu button i{ width:16px; color:var(--brass); }
+.profile-menu .logout-item{ color:var(--red); border-top:1px solid var(--line); }
+.profile-menu .logout-item i{ color:var(--red); }
+
+/* ===== Layout ===== */
+.shell{ display:flex; max-width:1400px; margin:0 auto; min-height: calc(100vh - 63px); }
+.sidebar{
+  width:230px; flex-shrink:0; background: #fff; border-left: 1px solid var(--line);
+  padding: 20px 14px; display:flex; flex-direction:column; gap:4px;
+}
+.side-eyebrow{ font-size:11px; color:#9a9a9a; font-weight:700; letter-spacing:1px; padding: 8px 10px 4px; }
+.side-btn{
+  background:transparent; text-align:right; padding:11px 14px; border-radius:10px; font-size:14.5px;
+  font-weight:500; color: var(--ink); display:flex; align-items:center; gap:12px; transition: all .15s;
+}
+.side-btn .ic{ font-size:15px; width:20px; text-align:center; color:#9a9a9a; }
+.side-btn:hover{ background: rgba(255,90,0,0.08); }
+.side-btn.active{ background: var(--ink); color: #fff; font-weight:700; }
+.side-btn.active .ic{ color:var(--brass); }
+
+.content{ flex:1; padding: 28px 32px; min-width:0; }
+.view{ animation: fadeUp .35s ease; }
+@keyframes fadeUp{ from{ opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+.page-head{ margin-bottom:22px; }
+.page-head h1{ font-family:var(--disp); font-size:26px; font-weight:800; }
+.page-head p{ color:#7a7a7a; font-size:14.5px; margin-top:4px; }
+
+/* ===== Cards / grid ===== */
+.grid{ display:grid; gap:16px; }
+.grid-3{ grid-template-columns:repeat(3,1fr); }
+.grid-4{ grid-template-columns:repeat(4,1fr); }
+.grid-2{ grid-template-columns:repeat(2,1fr); }
+@media (max-width:1000px){ .grid-3,.grid-4{grid-template-columns:repeat(2,1fr);} .shell{flex-direction:column;} .sidebar{width:100%; flex-direction:row; overflow-x:auto;} .account-choice{grid-template-columns:1fr;} }
+
+.card{
+  background:#fff; border:1px solid var(--line); border-radius: var(--radius); padding:18px;
+  box-shadow: var(--shadow);
+}
+.service-tile{
+  background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:20px 14px; text-align:center;
+  transition: all .18s ease; display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.service-tile:hover{ border-color: var(--brass); transform: translateY(-3px); box-shadow: var(--shadow); }
+.service-tile.selected{ border-color:var(--brass); background: #FFF4EC; box-shadow: var(--shadow); }
+.service-emoji{ font-size:26px; color:var(--brass); }
+.service-name{ font-weight:700; font-size:15px; }
+
+.btn{
+  padding:10px 20px; border-radius:10px; font-weight:700; font-size:14px; transition: all .15s;
+  display:inline-flex; align-items:center; gap:8px; justify-content:center;
+}
+.btn-primary{ background: var(--brass); color:#fff; }
+.btn-primary:hover{ background: var(--brass-2); }
+.btn-primary:disabled{ background:#f0c7ab; cursor:not-allowed; }
+.btn-outline{ background:transparent; border:1.5px solid var(--ink); color:var(--ink); }
+.btn-outline:hover{ background: var(--ink); color:#fff; }
+.btn-ghost{ background: rgba(26,26,26,0.06); color:var(--ink); }
+.btn-ghost:hover{ background: rgba(26,26,26,0.12); }
+.btn-danger{ background: transparent; border:1.5px solid var(--red); color:var(--red); }
+.btn-danger:hover{ background:var(--red); color:#fff; }
+.btn-success{ background: var(--green); color:#fff; }
+.btn-success:hover{ filter:brightness(1.08); }
+.btn-sm{ padding:7px 14px; font-size:13px; }
+.btn-block{ width:100%; }
+
+/* ===== Work ticket motif (signature element) ===== */
+.ticket{
+  position:relative; background:#fff; border:1px solid var(--line); border-radius:6px;
+  padding:18px 20px 20px; box-shadow: var(--shadow);
+  background-image: radial-gradient(circle, transparent 3px, #fff 3.5px);
+  background-size: 16px 16px;
+  background-position: -8px -8px;
+  clip-path: polygon(
+    0 6px, 2% 0, 4% 6px, 6% 0, 8% 6px, 10% 0, 12% 6px, 14% 0, 16% 6px, 18% 0, 20% 6px, 22% 0, 24% 6px, 26% 0, 28% 6px, 30% 0, 32% 6px, 34% 0, 36% 6px, 38% 0, 40% 6px, 42% 0, 44% 6px, 46% 0, 48% 6px, 50% 0, 52% 6px, 54% 0, 56% 6px, 58% 0, 60% 6px, 62% 0, 64% 6px, 66% 0, 68% 6px, 70% 0, 72% 6px, 74% 0, 76% 6px, 78% 0, 80% 6px, 82% 0, 84% 6px, 86% 0, 88% 6px, 90% 0, 92% 6px, 94% 0, 96% 6px, 98% 0, 100% 6px,
+    100% 100%, 0 100%
+  );
+  margin-top:8px;
+}
+.ticket-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; border-bottom:1.5px dashed var(--line); padding-bottom:12px; margin-bottom:12px; }
+.ticket-id{ font-family:var(--mono); font-size:12px; color:#9a9a9a; letter-spacing:0.5px; }
+.ticket-service{ font-family:var(--disp); font-weight:800; font-size:17px; margin-top:2px; display:flex; align-items:center; gap:8px; }
+.ticket-service i{ color:var(--brass); }
+.stamp{
+  border:2.5px solid currentColor; border-radius:50%; width:82px; height:82px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  font-family:var(--disp); font-weight:800; font-size:11px; line-height:1.15;
+  transform: rotate(-9deg); flex-shrink:0; opacity:0.9;
+}
+.stamp.pending{ color:#9a9a9a; }
+.stamp.price_proposed{ color:#3B6E9E; }
+.stamp.negotiating{ color:#8447C9; }
+.stamp.accepted{ color:var(--brass); }
+.stamp.on_the_way{ color:#3B6E9E; }
+.stamp.in_progress{ color:var(--amber); }
+.stamp.completed{ color:var(--green); }
+.stamp.rejected{ color:var(--red); }
+.ticket-row{ display:flex; justify-content:space-between; font-size:14px; padding:4px 0; color:#5a5a5a; }
+.ticket-row b{ color:var(--ink); font-weight:700; }
+.ticket-actions{ margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; }
+
+/* ===== Stepper ===== */
+.stepper{ display:flex; align-items:center; margin: 20px 0 8px; }
+.step{ flex:1; text-align:center; position:relative; }
+.step .dot{
+  width:34px; height:34px; border-radius:50%; background:#ece9e4; color:#b0aca4; font-weight:800;
+  display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:13px;
+  border:2px solid #ece9e4; transition: all .3s;
+}
+.step.done .dot{ background: var(--green); border-color:var(--green); color:#fff; }
+.step.current .dot{ background: var(--brass); border-color:var(--brass); color:#fff; box-shadow:0 0 0 5px rgba(255,90,0,0.20); }
+.step .lbl{ font-size:12px; color:#9a9a9a; font-weight:600; }
+.step.done .lbl, .step.current .lbl{ color:var(--ink); }
+.step:not(:last-child)::after{
+  content:''; position:absolute; top:17px; right:calc(50% + 25px); left:calc(-50% + 25px); height:2px; background:#ece9e4; z-index:0;
+}
+.step.done:not(:last-child)::after{ background: var(--green); }
+
+/* ===== Misc components ===== */
+.tag{ display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; }
+.tag-green{ background:rgba(29,184,106,0.12); color:var(--green); }
+.tag-amber{ background:rgba(255,194,46,0.18); color:#8a5f14; }
+.tag-red{ background:rgba(229,72,77,0.12); color:var(--red); }
+.tag-navy{ background:rgba(26,26,26,0.08); color:var(--ink); }
+.tag-blue{ background:rgba(59,110,158,0.12); color:#3B6E9E; }
+
+.field{ margin-bottom:14px; }
+.field label{ display:block; font-size:13.5px; font-weight:700; margin-bottom:6px; color:#3d372c; }
+.field input, .field select, .field textarea{
+  width:100%; padding:10px 12px; border:1.5px solid var(--line); border-radius:10px; font-size:14px; background:#fff;
+}
+.field textarea{ resize:vertical; min-height:80px; }
+
+table{ width:100%; border-collapse:collapse; font-size:14px; }
+th{ text-align:right; font-size:12.5px; color:#9a9a9a; font-weight:700; padding:10px 12px; border-bottom:2px solid var(--line); }
+td{ padding:12px; border-bottom:1px solid var(--line); }
+tr:hover td{ background: rgba(255,90,0,0.03); }
+
+.avatar{
+  width:42px; height:42px; border-radius:50%; background: var(--ink); color:#fff; display:flex; align-items:center;
+  justify-content:center; font-weight:800; font-family:var(--disp); flex-shrink:0;
+}
+.stars{ color:var(--amber); letter-spacing:2px; font-size:13px; }
+.stars i{ margin-left:1px; }
+.empty{ text-align:center; padding:50px 20px; color:#9a9a9a; }
+.empty .ic{ font-size:36px; margin-bottom:10px; color:#c9c9c9; }
+
+/* ===== Map ===== */
+.map-search-row{ display:flex; gap:8px; margin-bottom:10px; position:relative; }
+.map-search-row .input-wrap{ flex:1; position:relative; }
+.map-search-row input{ width:100%; padding:11px 40px 11px 12px; border:1.5px solid var(--line); border-radius:10px; font-size:14px; background:#fff; }
+.map-search-row .input-wrap i{ position:absolute; top:50%; right:13px; transform:translateY(-50%); color:#9a9a9a; }
+.addr-suggestions{
+  position:absolute; top:calc(100% + 6px); right:0; left:0; background:#fff; border:1px solid var(--line); border-radius:10px;
+  box-shadow:var(--shadow); z-index:400; max-height:220px; overflow-y:auto;
+}
+.addr-suggestions button{ width:100%; text-align:right; padding:10px 14px; font-size:13.5px; background:#fff; border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:flex-start;}
+.addr-suggestions button:hover{ background:var(--paper-2); }
+.addr-suggestions button i{ color:var(--brass); margin-top:3px; }
+#leafletMap{ height:320px; border-radius:14px; border:1.5px solid var(--line); overflow:hidden; }
+.map-links{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:12.5px; color:#9a9a9a; }
+.map-links a{ color:var(--brass); font-weight:700; }
+.map-note{ font-size:11.5px; color:#9a9a9a; margin-top:4px; display:flex; gap:6px; align-items:flex-start; }
+
+.chat-box{ display:flex; flex-direction:column; height:420px; border:1.5px solid var(--line); border-radius:14px; overflow:hidden; background:#fff;}
+.chat-msgs{ flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:var(--paper-2);}
+.msg{ max-width:70%; padding:9px 14px; border-radius:14px; font-size:14px; line-height:1.5; }
+.msg.me{ align-self:flex-start; background: var(--ink); color:#fff; border-bottom-right-radius:4px; }
+.msg.them{ align-self:flex-end; background:#fff; border:1px solid var(--line); border-bottom-left-radius:4px; }
+.msg.price{ align-self:flex-end; background:#FFF4EC; border:1.5px solid var(--brass); border-bottom-left-radius:4px; font-weight:700;}
+.chat-input{ display:flex; border-top:1px solid var(--line); padding:10px; gap:8px; }
+.chat-input input{ flex:1; border:1.5px solid var(--line); border-radius:20px; padding:9px 16px; font-size:14px;}
+
+.toast-wrap{ position:fixed; bottom:20px; left:20px; z-index:200; display:flex; flex-direction:column; gap:10px; }
+.toast{
+  background: var(--ink); color:#fff; padding:13px 18px; border-radius:10px; box-shadow: var(--shadow);
+  font-size:14px; font-weight:600; display:flex; align-items:center; gap:10px; border-right:4px solid var(--brass);
+  animation: slideIn .25s ease;
+}
+@keyframes slideIn{ from{ opacity:0; transform:translateX(-20px);} to{opacity:1; transform:none;} }
+
+.stat-card{ background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); }
+.stat-card .num{ font-family:var(--disp); font-size:30px; font-weight:800; color:var(--ink); }
+.stat-card .lbl{ font-size:13px; color:#9a9a9a; font-weight:600; margin-top:2px; }
+.bar-chart{ display:flex; align-items:flex-end; gap:10px; height:160px; padding-top:10px; }
+.bar-chart .col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+.bar-chart .bar{ width:100%; background: linear-gradient(180deg, var(--brass-2), var(--brass)); border-radius:6px 6px 0 0; transition: height .5s ease; }
+.bar-chart .bar-lbl{ font-size:11px; color:#9a9a9a; }
+
+.toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line); }
+.switch{ width:42px; height:24px; background:#ddd; border-radius:99px; position:relative; transition:.2s; }
+.switch.on{ background: var(--green); }
+.switch::after{ content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; right:3px; transition:.2s; }
+.switch.on::after{ right:21px; }
+
+.section-title{ font-family:var(--disp); font-weight:800; font-size:16px; margin: 26px 0 12px; display:flex; align-items:center; gap:8px;}
+.section-title .bar{ width:4px; height:16px; background:var(--brass); border-radius:2px; display:inline-block;}
+.subtle{ color:#9a9a9a; font-size:13px; }
+.hr{ border:none; border-top:1px solid var(--line); margin:16px 0; }
+.pill-nav{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap;}
+.pill-nav button{ padding:8px 16px; border-radius:999px; background:var(--paper-2); font-size:13.5px; font-weight:600; color:#4a4438; }
+.pill-nav button.active{ background:var(--ink); color:#fff; }
+
+.price-callout{
+  border:2px solid var(--brass); background:#FFF7F0; border-radius:14px; padding:18px; margin-top:6px;
+}
+.price-callout .amt{ font-family:var(--disp); font-weight:900; font-size:30px; color:var(--brass); }
+.avg-note{ display:flex; gap:8px; align-items:flex-start; background:var(--paper-2); border-radius:10px; padding:10px 12px; font-size:12.5px; color:#7a7a7a; margin-top:8px;}
+.avg-note i{ color:var(--brass); margin-top:2px; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen"></div>
+
+<div id="appRoot" style="display:none;">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><img src="logo.jpeg" alt="Ousta logo"></div>
+      <div>
+        <div class="brand-text">Ousta<span>.</span></div>
+        <div class="brand-sub">منصة الصيانة المنزلية</div>
+      </div>
+    </div>
+    <div class="role-switch" id="roleSwitch"></div>
+    <div class="topbar-right">
+      <div class="bell-wrap">
+        <button class="bell-btn" id="bellBtn"><i class="fa-solid fa-bell"></i><span class="bell-dot" id="bellDot" style="display:none">0</span></button>
+      </div>
+      <div class="profile-wrap">
+        <button class="profile-btn" id="profileBtn" onclick="toggleProfileMenu()">
+          <span class="profile-ic" id="profileIc"><i class="fa-solid fa-user"></i></span>
+          <span class="profile-name" id="profileName">حسابي</span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <div class="profile-menu" id="profileMenu" style="display:none;">
+          <button onclick="goProfileFromMenu()"><i class="fa-solid fa-id-card"></i>الملف الشخصي</button>
+          <button class="logout-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>تسجيل الخروج</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const LOGO_SRC = "logo.jpeg";
+
+/* ============ DATA ============ */
+const SERVICES = [
+  {id:'electric', name:'كهرباء', icon:'fa-bolt'},
+  {id:'plumbing', name:'سباكة', icon:'fa-faucet-drip'},
+  {id:'ac', name:'تكييف وتبريد', icon:'fa-snowflake'},
+  {id:'paint', name:'دهانات', icon:'fa-paint-roller'},
+  {id:'carpentry', name:'نجارة', icon:'fa-hammer'},
+  {id:'general', name:'صيانة عامة', icon:'fa-screwdriver-wrench'},
+];
+
+const TECHNICIANS = [
+  {id:'t1', name:'كريم عبد الرحمن', service:'electric', rating:4.9, reviews:212, distance:1.2, price:'150–250 ج.م', letter:'ك', verified:true, status:'available', bio:'فني كهرباء معتمد، خبرة 9 سنوات في الأعطال المنزلية والتمديدات.'},
+  {id:'t2', name:'محمود سيد', service:'electric', rating:4.6, reviews:88, distance:2.7, price:'120–200 ج.م', letter:'م', verified:true, status:'available', bio:'متخصص في لوحات التوزيع والإنارة الذكية.'},
+  {id:'t3', name:'أحمد جمال', service:'plumbing', rating:4.8, reviews:150, distance:0.9, price:'100–220 ج.م', letter:'أ', verified:true, status:'available', bio:'سباك محترف، تسليك مواسير وتركيب أدوات صحية.'},
+  {id:'t4', name:'حسام الدين', service:'ac', rating:4.7, reviews:97, distance:3.4, price:'200–400 ج.م', letter:'ح', verified:true, status:'busy', bio:'صيانة وتركيب تكييفات الشباك والسبليت.'},
+  {id:'t5', name:'يوسف خالد', service:'paint', rating:4.5, reviews:64, distance:4.1, price:'80–150 ج.م/م²', letter:'ي', verified:false, status:'available', bio:'دهانات ديكوريه وعادية بجودة عالية.'},
+  {id:'t6', name:'سامح فوزي', service:'carpentry', rating:4.9, reviews:140, distance:1.8, price:'180–350 ج.م', letter:'س', verified:true, status:'available', bio:'نجار أثاث وأبواب خشب، تصنيع وتفصيل.'},
+];
+
+let state = {
+  loggedIn: false,
+  authMode: 'login',
+  loginAccountType: null,
+  role: 'customer',
+  customerView: 'services',
+  technicianView: 'requests',
+  adminView: 'dashboard',
+  booking: { serviceId:null, techId:null, location:null, address:'', date:'', time:'', notes:'', payment:null },
+  orders: [
+    {id:'OST-1042', customer:'سارة أحمد', service:'سباكة', serviceIcon:'fa-faucet-drip', techId:'t3', techName:'أحمد جمال', status:'completed', estimatedPrice:160, proposedPrice:180, price:180, date:'2026-07-10', address:'شارع النصر، القاهرة', payment:'كاش', rating:5, review:'سريع ومحترف جداً، أنصح به.'},
+    {id:'OST-1043', customer:'أنت', service:'كهرباء', serviceIcon:'fa-bolt', techId:'t1', techName:'كريم عبد الرحمن', status:'in_progress', estimatedPrice:160, proposedPrice:220, price:220, date:'2026-07-14', address:'كفر الدوار، البحيرة', payment:'إلكتروني', rating:null, review:null},
+    {id:'OST-1044', customer:'مصطفى علي', service:'تكييف', serviceIcon:'fa-snowflake', techId:'t4', techName:'حسام الدين', status:'pending', estimatedPrice:240, proposedPrice:null, price:null, date:'2026-07-14', address:'دمنهور، البحيرة', payment:'كاش', rating:null, review:null},
+  ],
+  notifications: {
+    customer: [
+      {id:1, text:'الفني كريم عبد الرحمن في الطريق إليك الآن.', time:'منذ 5 دقائق', unread:true},
+      {id:2, text:'تم قبول طلبك رقم OST-1043.', time:'منذ 20 دقيقة', unread:true},
+      {id:3, text:'لا تنسَ تقييم آخر خدمة تمت.', time:'أمس', unread:false},
+    ],
+    technician: [
+      {id:1, text:'طلب جديد بانتظار موافقتك في منطقتك.', time:'منذ دقيقتين', unread:true},
+      {id:2, text:'تم تحويل أرباح الأسبوع الماضي لحسابك.', time:'أمس', unread:false},
+    ],
+  },
+  pendingTechnicians: [
+    {id:'p1', name:'إبراهيم توفيق', service:'plumbing', phone:'01012345678', cert:'رخصة صنعة - سباكة', date:'2026-07-12'},
+    {id:'p2', name:'وائل رمزي', service:'electric', phone:'01098765432', cert:'شهادة تدريب كهرباء منزلية', date:'2026-07-13'},
+  ],
+  complaints: [
+    {id:'C-201', from:'سارة أحمد', about:'الفني محمود سيد', text:'تأخر عن الموعد المحدد أكثر من ساعة.', status:'open'},
+    {id:'C-202', from:'مصطفى علي', about:'طلب OST-1044', text:'السعر المعروض أعلى من المتفق عليه هاتفياً.', status:'open'},
+  ],
+  chat: [
+    {from:'them', text:'أهلاً، أنا في الطريق إليك الآن.'},
+    {from:'me', text:'تمام يا أسطى، في انتظارك.'},
+    {from:'them', text:'هوصل خلال ١٥ دقيقة تقريباً.'},
+  ],
+  servicePrices: [
+    {id:'electric', name:'كهرباء', base:120},
+    {id:'plumbing', name:'سباكة', base:100},
+    {id:'ac', name:'تكييف وتبريد', base:200},
+    {id:'paint', name:'دهانات', base:90},
+    {id:'carpentry', name:'نجارة', base:150},
+    {id:'general', name:'صيانة عامة', base:100},
+  ],
+};
+
+const STATUS_META = {
+  pending:{label:'بانتظار رد الأسطى', cls:'pending'},
+  price_proposed:{label:'بانتظار موافقتك على السعر', cls:'price_proposed'},
+  negotiating:{label:'قيد التفاوض على السعر', cls:'negotiating'},
+  accepted:{label:'تم تأكيد السعر', cls:'accepted'},
+  on_the_way:{label:'في الطريق', cls:'on_the_way'},
+  in_progress:{label:'العمل جارٍ', cls:'in_progress'},
+  completed:{label:'تم الإنجاز', cls:'completed'},
+  rejected:{label:'مرفوض', cls:'rejected'},
+};
+const STEP_ORDER = ['pending','price_proposed','accepted','on_the_way','in_progress','completed'];
+
+function stars(rating){
+  const full = Math.round(rating);
+  let html = '<span class="stars">';
+  for(let i=0;i<5;i++) html += `<i class="fa-solid fa-star" style="${i<full?'':'opacity:.28'}"></i>`;
+  html += '</span>';
+  return html;
+}
+
+function toast(msg){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className='toast';
+  el.innerHTML = `<i class="fa-solid fa-bell"></i><span>${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, 3200);
+}
+
+/* ============ LOGIN ============ */
+function renderLogin(){
+  document.getElementById('appRoot').style.display = 'none';
+  const el = document.getElementById('loginScreen');
+  el.style.display = 'flex';
+  const acctType = state.loginAccountType;
+  el.innerHTML = `
+    <div class="login-card">
+      <div class="login-logo-row">
+        <img src="${LOGO_SRC}" class="login-logo-img" alt="Ousta">
+        <div class="login-wordmark">Ousta<span>.</span></div>
+        <div class="login-tagline">منصة الصيانة المنزلية — صنايعية موثوقين قريب منك</div>
+      </div>
+      <div class="login-tabs">
+        <button class="login-tab ${state.authMode==='login'?'active':''}" onclick="setAuthMode('login')">تسجيل الدخول</button>
+        <button class="login-tab ${state.authMode==='signup'?'active':''}" onclick="setAuthMode('signup')">حساب جديد</button>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label style="font-size:12.5px; font-weight:700; color:#4a4a4a; display:block; margin-bottom:8px;">نوع الحساب</label>
+        <div class="account-choice">
+          <button class="acct-tile ${acctType==='customer'?'selected':''}" onclick="chooseAccountType('customer')">
+            <i class="fa-solid fa-user"></i>
+            <div class="t">عميل</div>
+            <div class="s">أطلب خدمة صيانة</div>
+          </button>
+          <button class="acct-tile ${acctType==='technician'?'selected':''}" onclick="chooseAccountType('technician')">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+            <div class="t">أسطى (فني)</div>
+            <div class="s">أستقبل طلبات صيانة</div>
+          </button>
+        </div>
+      </div>
+      <div class="login-field">
+        <label>${state.authMode==='signup'?'الاسم بالكامل':'رقم الموبايل'}</label>
+        <div class="input-ic"><input placeholder="${state.authMode==='signup'?'مثال: أحمد محمد':'01xxxxxxxxx'}"><i class="fa-solid ${state.authMode==='signup'?'fa-id-badge':'fa-mobile-screen'}"></i></div>
+      </div>
+      <div class="login-field">
+        <label>كلمة المرور</label>
+        <div class="input-ic"><input type="password" placeholder="••••••••"><i class="fa-solid fa-lock"></i></div>
+      </div>
+      <button class="login-submit" ${!acctType?'disabled':''} onclick="completeLogin()">
+        ${state.authMode==='signup' ? 'إنشاء الحساب والدخول' : 'تسجيل الدخول'}
+      </button>
+      <div class="login-foot">
+        ${state.authMode==='login' ? `ليس لديك حساب؟ <button onclick="setAuthMode('signup')">أنشئ حساباً</button>` : `لديك حساب بالفعل؟ <button onclick="setAuthMode('login')">سجّل الدخول</button>`}
+      </div>
+      <button class="login-admin-link" onclick="adminLogin()">دخول فريق الإدارة ←</button>
+    </div>
+  `;
+}
+function setAuthMode(m){ state.authMode = m; renderLogin(); }
+function chooseAccountType(t){ state.loginAccountType = t; renderLogin(); }
+function completeLogin(){
+  if(!state.loginAccountType) return;
+  state.role = state.loginAccountType;
+  state.loggedIn = true;
+  render();
+  toast(state.role==='customer' ? 'أهلاً بك في أُسطى 👋' : 'أهلاً بك يا أسطى، بالتوفيق في شغلك 🛠️');
+}
+function adminLogin(){
+  state.role = 'admin'; state.loggedIn = true; render();
+  toast('تم الدخول إلى لوحة الإدارة');
+}
+function logout(){
+  state.loggedIn = false; state.loginAccountType = null; state.authMode='login';
+  document.getElementById('profileMenu').style.display='none';
+  render();
+}
+
+/* ============ SHELL RENDER ============ */
+function renderTopbar(){
+  const rs = document.getElementById('roleSwitch');
+  const roles = [{id:'customer', label:'عميل', ic:'fa-user'},{id:'technician', label:'أسطى', ic:'fa-screwdriver-wrench'},{id:'admin', label:'الإدارة', ic:'fa-gauge'}];
+  rs.innerHTML = roles.map(r=>`<button class="role-btn ${state.role===r.id?'active':''}" onclick="setRole('${r.id}')"><i class="fa-solid ${r.ic}"></i>${r.label}</button>`).join('');
+
+  const bellDot = document.getElementById('bellDot');
+  let unread = 0;
+  if(state.role==='customer') unread = state.notifications.customer.filter(n=>n.unread).length;
+  if(state.role==='technician') unread = state.notifications.technician.filter(n=>n.unread).length;
+  if(state.role==='admin') unread = state.pendingTechnicians.length + state.complaints.filter(c=>c.status==='open').length;
+  bellDot.style.display = unread>0 ? 'flex':'none';
+  bellDot.textContent = unread;
+
+  const names = {customer:'حسابي', technician:'كريم عبد الرحمن', admin:'فريق الإدارة'};
+  const icons = {customer:'fa-user', technician:'fa-screwdriver-wrench', admin:'fa-user-shield'};
+  document.getElementById('profileName').textContent = names[state.role];
+  document.getElementById('profileIc').innerHTML = `<i class="fa-solid ${icons[state.role]}"></i>`;
+}
+
+function setRole(role){
+  state.role = role;
+  render();
+}
+
+document.getElementById('bellBtn').onclick = ()=>{
+  if(state.role==='customer') { state.customerView='notifications'; }
+  if(state.role==='technician') { state.technicianView='notifications'; }
+  if(state.role==='admin') { state.adminView='approvals'; }
+  render();
+};
+function toggleProfileMenu(){
+  const m = document.getElementById('profileMenu');
+  m.style.display = m.style.display==='block' ? 'none' : 'block';
+}
+document.addEventListener('click', (e)=>{
+  const wrap = document.querySelector('.profile-wrap');
+  if(wrap && !wrap.contains(e.target)) document.getElementById('profileMenu').style.display='none';
+});
+function goProfileFromMenu(){
+  document.getElementById('profileMenu').style.display='none';
+  if(state.role==='technician'){ state.technicianView='profile'; }
+  if(state.role==='customer'){ state.customerView='profile'; }
+  if(state.role==='admin'){ state.adminView='dashboard'; }
+  render();
+}
+
+function render(){
+  if(!state.loggedIn){ renderLogin(); return; }
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appRoot').style.display='block';
+  renderTopbar();
+  if(state.role==='customer') renderCustomer();
+  if(state.role==='technician') renderTechnician();
+  if(state.role==='admin') renderAdmin();
+}
+
+/* ============ CUSTOMER ============ */
+const CUSTOMER_NAV = [
+  {id:'services', label:'اختيار الخدمة', ic:'fa-list-check'},
+  {id:'search', label:'البحث عن فني', ic:'fa-magnifying-glass'},
+  {id:'tracking', label:'تتبع الطلب', ic:'fa-location-dot'},
+  {id:'history', label:'سجل الطلبات', ic:'fa-clock-rotate-left'},
+  {id:'notifications', label:'الإشعارات', ic:'fa-bell'},
+  {id:'support', label:'الدعم والمحادثة', ic:'fa-headset'},
+  {id:'profile', label:'حسابي', ic:'fa-id-card'},
+];
+
+function renderCustomer(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = `<div class="side-eyebrow">حساب العميل</div>` + CUSTOMER_NAV.map(n=>`
+    <button class="side-btn ${state.customerView===n.id?'active':''}" onclick="goCustomer('${n.id}')">
+      <span class="ic"><i class="fa-solid ${n.ic}"></i></span>${n.label}
+    </button>`).join('');
+
+  const c = document.getElementById('content');
+  if(state.customerView==='services') c.innerHTML = viewServices();
+  else if(state.customerView==='search') c.innerHTML = viewSearch();
+  else if(state.customerView==='location'){ c.innerHTML = viewLocation(); setTimeout(initLocationMap, 30); }
+  else if(state.customerView==='booking') c.innerHTML = viewBooking();
+  else if(state.customerView==='payment') c.innerHTML = viewPayment();
+  else if(state.customerView==='tracking') c.innerHTML = viewTracking();
+  else if(state.customerView==='history') c.innerHTML = viewHistory();
+  else if(state.customerView==='notifications') c.innerHTML = viewNotificationsCustomer();
+  else if(state.customerView==='support') c.innerHTML = viewSupport();
+  else if(state.customerView==='profile') c.innerHTML = viewCustomerProfile();
+}
+function goCustomer(v){ state.customerView=v; render(); }
+
+function svcIconHtml(id){
+  const s = SERVICES.find(x=>x.id===id);
+  return s ? `<i class="fa-solid ${s.icon}"></i>` : '';
+}
+
+function viewServices(){
+  return `
+  <div class="view">
+    <div class="page-head">
+      <h1>إيه الخدمة اللي محتاجها؟</h1>
+      <p>اختَر نوع الصنعة عشان نلاقيلك أقرب أسطى موثوق في منطقتك.</p>
+    </div>
+    <div class="grid grid-3">
+      ${SERVICES.map(s=>`
+        <button class="service-tile ${state.booking.serviceId===s.id?'selected':''}" onclick="pickService('${s.id}')">
+          <div class="service-emoji"><i class="fa-solid ${s.icon}"></i></div>
+          <div class="service-name">${s.name}</div>
+        </button>`).join('')}
+    </div>
+    <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" ${!state.booking.serviceId?'disabled':''} onclick="goCustomer('search')">التالي: البحث عن فني <i class="fa-solid fa-arrow-left"></i></button>
+    </div>
+  </div>`;
+}
+function pickService(id){ state.booking.serviceId = id; render(); }
+
+function viewSearch(){
+  const svc = SERVICES.find(s=>s.id===state.booking.serviceId);
+  const list = TECHNICIANS.filter(t=> !svc || t.service===svc.id);
+  return `
+  <div class="view">
+    <div class="page-head">
+      <h1>الفنيون المتاحون ${svc?('في تخصص '+svc.name):''}</h1>
+      <p>مرتبين حسب الأقرب لموقعك والأعلى تقييماً.</p>
+    </div>
+    <div class="grid grid-2">
+      ${list.map(t=>`
+        <div class="card">
+          <div style="display:flex; gap:14px;">
+            <div class="avatar" style="width:52px;height:52px;font-size:18px;">${t.letter}</div>
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <div style="font-weight:800; font-size:15.5px;">${t.name} ${t.verified?'<i class="fa-solid fa-circle-check" style="color:var(--green);" title="فني موثّق"></i>':''}</div>
+                  <div>${stars(t.rating)} <span style="color:#9a9a9a; font-size:12.5px;">(${t.rating} · ${t.reviews} تقييم)</span></div>
+                </div>
+                <span class="tag ${t.status==='available'?'tag-green':'tag-amber'}">${t.status==='available'?'متاح الآن':'مشغول'}</span>
+              </div>
+              <p class="subtle" style="margin-top:8px;">${t.bio}</p>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <span class="subtle"><i class="fa-solid fa-location-dot"></i> يبعد ${t.distance} كم &nbsp;·&nbsp; <i class="fa-solid fa-tag"></i> ${t.price}</span>
+              </div>
+              <button class="btn btn-primary btn-sm btn-block" style="margin-top:12px;" onclick="pickTech('${t.id}')" ${t.status!=='available'?'disabled':''}>
+                ${t.status==='available' ? 'اختيار وحجز الموعد' : 'غير متاح حالياً'}
+              </button>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+function pickTech(id){ state.booking.techId = id; state.customerView='location'; render(); }
+
+/* ===== Location / Map (OpenStreetMap live map + Google Maps link) ===== */
+function viewLocation(){
+  return `
+  <div class="view">
+    <div class="page-head">
+      <h1>حدّد موقعك على الخريطة</h1>
+      <p>ابحث عن عنوانك، أو اضغط على الخريطة لتثبيت الدبوس، أو اسحبه لمكانك بالضبط.</p>
+    </div>
+    <div class="map-search-row">
+      <div class="input-wrap">
+        <input id="addrSearch" placeholder="اكتب اسم الشارع أو المنطقة..." oninput="onAddrSearchInput()" autocomplete="off">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <div class="addr-suggestions" id="addrSuggestions" style="display:none;"></div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="useMyLocation()"><i class="fa-solid fa-location-crosshairs"></i> موقعي الحالي</button>
+    </div>
+    <div id="leafletMap"></div>
+    <div class="map-links">
+      <span><i class="fa-solid fa-map-pin"></i> اسحب الدبوس لضبط الموقع بدقة</span>
+      <a id="googleMapsLink" href="#" target="_blank" rel="noopener">فتح في خرائط جوجل <i class="fa-solid fa-arrow-up-left-from-square"></i></a>
+    </div>
+    <div class="map-note"><i class="fa-solid fa-circle-info"></i><span>تعمل الخريطة ببيانات OpenStreetMap الحية (لا تتطلب مفتاح API)، مع رابط مباشر لفتح نفس الموقع على خرائط جوجل للتأكيد.</span></div>
+    <div class="field" style="margin-top:16px;">
+      <label>العنوان بالتفصيل</label>
+      <input id="addrInput" placeholder="مثال: كفر الدوار، البحيرة - شارع الجمهورية" value="${state.booking.address||''}">
+    </div>
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn btn-outline" onclick="goCustomer('search')"><i class="fa-solid fa-arrow-right"></i> رجوع</button>
+      <button class="btn btn-primary" onclick="confirmLocation()">تأكيد الموقع والمتابعة <i class="fa-solid fa-arrow-left"></i></button>
+    </div>
+  </div>`;
+}
+
+let _ostaMap=null, _ostaMarker=null, _addrDebounce=null;
+function defaultLatLng(){
+  return state.booking.location || {lat:31.1330, lng:30.1319}; // Kafr El Dawwar, Beheira
+}
+function initLocationMap(){
+  const mapDiv = document.getElementById('leafletMap');
+  if(!mapDiv || typeof L === 'undefined') return;
+  if(_ostaMap){ _ostaMap.remove(); _ostaMap=null; }
+  const start = defaultLatLng();
+  _ostaMap = L.map('leafletMap').setView([start.lat, start.lng], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap contributors', maxZoom:19
+  }).addTo(_ostaMap);
+  _ostaMarker = L.marker([start.lat, start.lng], {draggable:true}).addTo(_ostaMap);
+  _ostaMarker.on('dragend', ()=>{ const p=_ostaMarker.getLatLng(); setBookingLocation(p.lat,p.lng); });
+  _ostaMap.on('click', (e)=>{ _ostaMarker.setLatLng(e.latlng); setBookingLocation(e.latlng.lat, e.latlng.lng); });
+  updateGoogleMapsLink(start.lat, start.lng);
+}
+function updateGoogleMapsLink(lat,lng){
+  const a = document.getElementById('googleMapsLink');
+  if(a) a.href = `https://www.google.com/maps?q=${lat},${lng}`;
+}
+function setBookingLocation(lat,lng){
+  state.booking.location = {lat,lng};
+  updateGoogleMapsLink(lat,lng);
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`)
+    .then(r=>r.json()).then(d=>{
+      const inp = document.getElementById('addrInput');
+      if(inp && d && d.display_name){ inp.value = d.display_name; state.booking.address = d.display_name; }
+    }).catch(()=>{});
+}
+function onAddrSearchInput(){
+  clearTimeout(_addrDebounce);
+  const q = document.getElementById('addrSearch').value.trim();
+  const box = document.getElementById('addrSuggestions');
+  if(q.length<3){ box.style.display='none'; box.innerHTML=''; return; }
+  _addrDebounce = setTimeout(()=>{
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=eg&limit=5&accept-language=ar`)
+      .then(r=>r.json()).then(list=>{
+        if(!list.length){ box.innerHTML = `<button disabled><i class="fa-solid fa-circle-info"></i> لا توجد نتائج</button>`; box.style.display='block'; return; }
+        box.innerHTML = list.map((p,i)=>`<button onclick="selectAddrSuggestion(${i})"><i class="fa-solid fa-location-dot"></i>${p.display_name}</button>`).join('');
+        window._addrResults = list;
+        box.style.display='block';
+      }).catch(()=>{ box.style.display='none'; });
+  }, 450);
+}
+function selectAddrSuggestion(i){
+  const p = window._addrResults[i];
+  if(!p) return;
+  const lat=parseFloat(p.lat), lng=parseFloat(p.lon);
+  document.getElementById('addrSuggestions').style.display='none';
+  document.getElementById('addrSearch').value = p.display_name;
+  document.getElementById('addrInput').value = p.display_name;
+  state.booking.address = p.display_name;
+  state.booking.location = {lat,lng};
+  if(_ostaMap){ _ostaMap.setView([lat,lng],16); _ostaMarker.setLatLng([lat,lng]); }
+  updateGoogleMapsLink(lat,lng);
+}
+function useMyLocation(){
+  if(!navigator.geolocation){ toast('المتصفح لا يدعم تحديد الموقع'); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat, longitude:lng} = pos.coords;
+    if(_ostaMap){ _ostaMap.setView([lat,lng],16); _ostaMarker.setLatLng([lat,lng]); }
+    setBookingLocation(lat,lng);
+  }, ()=> toast('تعذّر الوصول لموقعك، حدّده يدوياً على الخريطة'));
+}
+function confirmLocation(){
+  state.booking.address = document.getElementById('addrInput').value || state.booking.address || 'كفر الدوار، البحيرة';
+  if(!state.booking.location) state.booking.location = defaultLatLng();
+  state.customerView='booking';
+  render();
+}
+
+function viewBooking(){
+  const tech = TECHNICIANS.find(t=>t.id===state.booking.techId);
+  const svcPrice = state.servicePrices.find(s=>s.id===state.booking.serviceId);
+  const avg = svcPrice ? svcPrice.base + 40 : 150;
+  state.booking.estimate = avg;
+  return `
+  <div class="view">
+    <div class="page-head">
+      <h1>تفاصيل الحجز</h1>
+      <p>راجع بيانات الحجز قبل الإرسال للأسطى.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="field"><label>التاريخ</label><input type="date" id="bDate" value="2026-07-15"></div>
+        <div class="field"><label>الوقت</label><input type="time" id="bTime" value="11:00"></div>
+        <div class="field"><label>ملاحظات إضافية للفني</label><textarea id="bNotes" placeholder="مثال: عطل في المفاتيح الكهربائية بغرفة النوم"></textarea></div>
+      </div>
+      <div class="card">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="avatar">${tech?tech.letter:'؟'}</div>
+          <div>
+            <div style="font-weight:800;">${tech?tech.name:''}</div>
+            <div class="subtle">${tech?tech.price:''}</div>
+          </div>
+        </div>
+        <hr class="hr">
+        <div class="ticket-row"><span>العنوان</span><b>${state.booking.address||'-'}</b></div>
+        <div class="ticket-row"><span>الخدمة</span><b>${SERVICES.find(s=>s.id===state.booking.serviceId)?.name||'-'}</b></div>
+        <hr class="hr">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700;">متوسط السعر التقريبي للخدمة</span>
+          <span style="font-family:var(--disp); font-weight:900; font-size:22px; color:var(--brass);">~${avg} ج.م</span>
+        </div>
+        <div class="avg-note"><i class="fa-solid fa-circle-info"></i><span>هذا متوسط سعر عام لهذا النوع من الخدمة فقط. الأسطى سيحدد السعر الفعلي بعد مراجعة تفاصيل طلبك، وسيظهر لك السعر النهائي لتوافق عليه أو تتفاوض عليه قبل بدء العمل.</span></div>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:18px;">
+      <button class="btn btn-outline" onclick="goCustomer('location')"><i class="fa-solid fa-arrow-right"></i> رجوع</button>
+      <button class="btn btn-primary" onclick="goCustomer('payment')">التالي: الدفع <i class="fa-solid fa-arrow-left"></i></button>
+    </div>
+  </div>`;
+}
+
+function viewPayment(){
+  return `
+  <div class="view">
+    <div class="page-head">
+      <h1>طريقة الدفع</h1>
+      <p>اختر الطريقة المناسبة لك. لن يُخصم أي مبلغ إلا بعد موافقتك على السعر النهائي الذي يحدده الأسطى.</p>
+    </div>
+    <div class="grid grid-2">
+      <button class="service-tile ${state.booking.payment==='كاش'?'selected':''}" onclick="setPay('كاش')">
+        <div class="service-emoji"><i class="fa-solid fa-money-bill-wave"></i></div><div class="service-name">الدفع كاش عند الاستلام</div>
+      </button>
+      <button class="service-tile ${state.booking.payment==='إلكتروني'?'selected':''}" onclick="setPay('إلكتروني')">
+        <div class="service-emoji"><i class="fa-solid fa-credit-card"></i></div><div class="service-name">الدفع الإلكتروني (بطاقة/محفظة)</div>
+      </button>
+    </div>
+    ${state.booking.payment==='إلكتروني' ? `
+    <div class="card" style="margin-top:16px; max-width:420px;">
+      <div class="field"><label>رقم البطاقة</label><input placeholder="•••• •••• •••• 4521"></div>
+      <div class="grid grid-2">
+        <div class="field"><label>تاريخ الانتهاء</label><input placeholder="MM/YY"></div>
+        <div class="field"><label>CVV</label><input placeholder="•••"></div>
+      </div>
+    </div>` : ''}
+    <div style="display:flex; justify-content:space-between; margin-top:18px;">
+      <button class="btn btn-outline" onclick="goCustomer('booking')"><i class="fa-solid fa-arrow-right"></i> رجوع</button>
+      <button class="btn btn-primary" ${!state.booking.payment?'disabled':''} onclick="confirmBooking()">تأكيد الحجز <i class="fa-solid fa-check"></i></button>
+    </div>
+  </div>`;
+}
+function setPay(p){ state.booking.payment=p; render(); }
+
+function confirmBooking(){
+  const tech = TECHNICIANS.find(t=>t.id===state.booking.techId);
+  const svc = SERVICES.find(s=>s.id===state.booking.serviceId);
+  const id = 'OST-'+(1045+state.orders.length);
+  state.orders.unshift({
+    id, customer:'أنت', service:svc.name, serviceIcon:svc.icon, techId:tech.id, techName:tech.name,
+    status:'pending', estimatedPrice: state.booking.estimate, proposedPrice:null, price:null, date:'2026-07-15', address: state.booking.address,
+    payment: state.booking.payment, rating:null, review:null
+  });
+  toast('تم إرسال طلبك إلى '+tech.name+' بانتظار الرد وتحديد السعر');
+  state.customerView='tracking';
+  state.booking = { serviceId:null, techId:null, location:null, address:'', date:'', time:'', notes:'', payment:null };
+  render();
+}
+
+function viewTracking(){
+  const myOrders = state.orders.filter(o=>o.customer==='أنت');
+  const order = myOrders[0];
+  if(!order) return `<div class="view"><div class="empty"><div class="ic"><i class="fa-solid fa-box-open"></i></div>لا يوجد طلب حالي.<br><button class="btn btn-primary" style="margin-top:14px;" onclick="goCustomer('services')">احجز خدمة جديدة</button></div></div>`;
+  const idx = STEP_ORDER.indexOf(order.status);
+  const steps = [{k:'pending',l:'تم الحجز'},{k:'price_proposed',l:'السعر جاهز'},{k:'accepted',l:'تم التأكيد'},{k:'on_the_way',l:'في الطريق'},{k:'in_progress',l:'بدأ العمل'},{k:'completed',l:'اكتمل'}];
+  const meta = STATUS_META[order.status];
+  return `
+  <div class="view">
+    <div class="page-head">
+      <h1>تتبع طلبك</h1>
+      <p>رقم الطلب ${order.id} — ${order.service}</p>
+    </div>
+    ${order.status==='rejected' ? `
+      <div class="card" style="text-align:center; padding:40px;">
+        <div style="font-size:32px; color:var(--red);"><i class="fa-solid fa-face-frown"></i></div>
+        <h3 style="margin:10px 0;">اعتذر الفني عن الطلب</h3>
+        <p class="subtle">يمكنك اختيار فني آخر متاح لنفس الخدمة.</p>
+        <button class="btn btn-primary" style="margin-top:14px;" onclick="goCustomer('search')">البحث عن فني آخر</button>
+      </div>
+    ` : `
+    <div class="stepper">
+      ${steps.map((s,i)=>`
+        <div class="step ${i<idx?'done':''} ${i===idx?'current':''}">
+          <div class="dot">${i<idx?'<i class=\"fa-solid fa-check\"></i>':i+1}</div>
+          <div class="lbl">${s.l}</div>
+        </div>`).join('')}
+    </div>
+
+    ${order.status==='price_proposed' ? `
+    <div class="price-callout">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-weight:800; margin-bottom:4px;"><i class="fa-solid fa-file-invoice-dollar"></i> ${order.techName} حدّد سعر الخدمة</div>
+          <div class="subtle">متوسط السعر العام كان ~${order.estimatedPrice} ج.م، والسعر الفعلي المقترح حسب حالة العطل هو:</div>
+        </div>
+        <div class="amt">${order.proposedPrice} ج.م</div>
+      </div>
+      <div class="ticket-actions">
+        <button class="btn btn-success" onclick="approvePriceCustomer('${order.id}')"><i class="fa-solid fa-check"></i> موافقة على السعر</button>
+        <button class="btn btn-outline" onclick="negotiatePrice('${order.id}')"><i class="fa-solid fa-comments"></i> التفاوض مع الأسطى</button>
+        <button class="btn btn-danger" onclick="cancelOrderPrice('${order.id}')"><i class="fa-solid fa-xmark"></i> إلغاء الطلب</button>
+      </div>
+    </div>
+    ` : ''}
+
+    ${order.status==='negotiating' ? `
+    <div class="price-callout" style="border-color:#8447C9; background:#F7F2FF;">
+      <div style="font-weight:800; margin-bottom:6px;"><i class="fa-solid fa-comments" style="color:#8447C9;"></i> جاري التفاوض على السعر</div>
+      <p class="subtle">آخر سعر مقترح من الأسطى: <b>${order.proposedPrice} ج.م</b>. تابع المحادثة للاتفاق على السعر النهائي.</p>
+      <div class="ticket-actions">
+        <button class="btn btn-primary" onclick="goCustomer('support')"><i class="fa-solid fa-comments"></i> فتح المحادثة</button>
+        <button class="btn btn-success" onclick="approvePriceCustomer('${order.id}')"><i class="fa-solid fa-check"></i> موافقة على آخر سعر</button>
+      </div>
+    </div>
+    ` : ''}
+
+    <div class="ticket">
+      <div class="ticket-head">
+        <div>
+          <div class="ticket-id">${order.id}</div>
+          <div class="ticket-service"><i class="fa-solid ${order.serviceIcon}"></i> ${order.service}</div>
+        </div>
+        <div class="stamp ${meta.cls}">${meta.label}</div>
+      </div>
+      <div class="ticket-row"><span>الفني</span><b>${order.techName}</b></div>
+      <div class="ticket-row"><span>العنوان</span><b>${order.address}</b></div>
+      <div class="ticket-row"><span>متوسط السعر العام</span><b>~${order.estimatedPrice} ج.م</b></div>
+      ${order.proposedPrice ? `<div class="ticket-row"><span>السعر المتفق عليه</span><b style="color:var(--brass);">${order.proposedPrice} ج.م</b></div>` : ''}
+      <div class="ticket-row"><span>طريقة الدفع</span><b>${order.payment}</b></div>
+      ${order.status==='completed' && !order.rating ? `
+        <hr class="hr">
+        <div style="font-weight:700; margin-bottom:8px;">قيّم تجربتك مع الفني</div>
+        <div id="starPicker" style="font-size:24px; color:#ddd; cursor:pointer; margin-bottom:10px;">
+          ${[1,2,3,4,5].map(n=>`<i class="fa-solid fa-star" onclick="rateOrder('${order.id}',${n})" style="margin-left:4px;"></i>`).join('')}
+        </div>
+        <textarea id="reviewText" placeholder="اكتب رأيك في الخدمة..." style="width:100%; border:1.5px solid var(--line); border-radius:10px; padding:10px; min-height:60px;"></textarea>
+        <button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="submitReviewOnly('${order.id}')">إرسال التقييم</button>
+      ` : ''}
+      ${order.rating ? `<hr class="hr">${stars(order.rating)}<p class="subtle" style="margin-top:4px;">"${order.review||''}"</p>` : ''}
+    </div>
+    `}
+  </div>`;
+}
+function approvePriceCustomer(id){
+  const o = state.orders.find(x=>x.id===id);
+  o.status='accepted'; o.price = o.proposedPrice;
+  state.notifications.technician.unshift({id:Date.now(), text:'وافق العميل على سعر الطلب '+id, time:'الآن', unread:true});
+  toast('تم تأكيد السعر، سيبدأ الأسطى بالتوجه إليك قريباً');
+  render();
+}
+function negotiatePrice(id){
+  const o = state.orders.find(x=>x.id===id);
+  o.status='negotiating';
+  state.chat.push({from:'me', text:'ممكن نتفاوض شوية على السعر المقترح لطلب '+id+'؟'});
+  toast('تم فتح التفاوض، تابع المحادثة مع الأسطى');
+  state.customerView='support';
+  render();
+}
+function cancelOrderPrice(id){
+  const o = state.orders.find(x=>x.id===id);
+  o.status='rejected';
+  toast('تم إلغاء الطلب');
+  render();
+}
+let tempRating = null;
+function rateOrder(id, n){
+  tempRating = n;
+  const picker = document.getElementById('starPicker');
+  if(picker) picker.innerHTML = [1,2,3,4,5].map(i=>`<i class="fa-solid fa-star" onclick="rateOrder('${id}',${i})" style="margin-left:4px; color:${i<=n?'var(--amber)':'#ddd'};"></i>`).join('');
+}
+function submitReviewOnly(id){
+  const order = state.orders.find(o=>o.id===id);
+  order.rating = tempRating || 5;
+  order.review = document.getElementById('reviewText').value || 'خدمة ممتازة، شكراً.';
+  toast('تم إرسال تقييمك، شكراً لك!');
+  render();
+}
+
+function viewHistory(){
+  const myOrders = state.orders.filter(o=>o.customer==='أنت' || o.customer==='سارة أحمد');
+  return `
+  <div class="view">
+    <div class="page-head"><h1>سجل الطلبات السابقة</h1><p>كل طلباتك مع تفاصيلها وتقييماتك.</p></div>
+    ${myOrders.map(o=>{
+      const meta = STATUS_META[o.status];
+      return `<div class="ticket">
+        <div class="ticket-head">
+          <div><div class="ticket-id">${o.id}</div><div class="ticket-service"><i class="fa-solid ${o.serviceIcon}"></i> ${o.service}</div></div>
+          <div class="stamp ${meta.cls}">${meta.label}</div>
+        </div>
+        <div class="ticket-row"><span>الفني</span><b>${o.techName}</b></div>
+        <div class="ticket-row"><span>التاريخ</span><b>${o.date}</b></div>
+        <div class="ticket-row"><span>السعر النهائي</span><b>${o.price?o.price+' ج.م':'—'}</b></div>
+        ${o.rating?`<div class="ticket-row"><span>تقييمك</span><b>${stars(o.rating)}</b></div>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function viewNotificationsCustomer(){
+  state.notifications.customer.forEach(n=>n.unread=false);
+  return `
+  <div class="view">
+    <div class="page-head"><h1>الإشعارات</h1><p>آخر التحديثات على طلباتك.</p></div>
+    ${state.notifications.customer.map(n=>`
+      <div class="card" style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fa-solid fa-bell" style="color:var(--brass);"></i> ${n.text}</span><span class="subtle">${n.time}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+function viewSupport(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>الدعم الفني والمحادثة</h1><p>تواصل مع فريق الدعم أو مع الفني المسؤول عن طلبك، أو فاوضه على السعر مباشرة.</p></div>
+    <div class="grid grid-2">
+      <div class="chat-box">
+        <div style="padding:12px 16px; border-bottom:1px solid var(--line); font-weight:700;"><i class="fa-solid fa-comments" style="color:var(--brass);"></i> محادثة مع الفني (كريم عبد الرحمن)</div>
+        <div class="chat-msgs" id="chatMsgs">
+          ${state.chat.map(m=>`<div class="msg ${m.from==='me'?'me':'them'}">${m.text}</div>`).join('')}
+        </div>
+        <div class="chat-input">
+          <input id="chatInput" placeholder="اكتب رسالتك...">
+          <button class="btn btn-primary btn-sm" onclick="sendChat()">إرسال</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:800; margin-bottom:10px;">تواصل مع خدمة العملاء</div>
+        <p class="subtle">متاحون على مدار الساعة لمساعدتك في أي مشكلة تخص الحجز أو الدفع أو الفنيين.</p>
+        <div class="field" style="margin-top:14px;"><label>موضوع الشكوى أو الاستفسار</label><input placeholder="مثال: تأخر الفني عن الموعد"></div>
+        <div class="field"><label>التفاصيل</label><textarea placeholder="اكتب تفاصيل المشكلة..."></textarea></div>
+        <button class="btn btn-primary btn-block" onclick="toast('تم إرسال بلاغك لفريق الدعم، سنتواصل معك قريباً.')">إرسال إلى الدعم</button>
+      </div>
+    </div>
+  </div>`;
+}
+function sendChat(){
+  const inp = document.getElementById('chatInput');
+  if(!inp.value.trim()) return;
+  state.chat.push({from:'me', text:inp.value});
+  inp.value='';
+  render();
+  setTimeout(()=>{ state.chat.push({from:'them', text:'تمام، وصلتني رسالتك 👍'}); render(); }, 900);
+}
+
+function viewCustomerProfile(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>حسابي</h1><p>بيانات حسابك كعميل على منصة Ousta.</p></div>
+    <div class="card" style="max-width:520px;">
+      <div class="field"><label>الاسم الكامل</label><input value="أنت"></div>
+      <div class="field"><label>رقم الموبايل</label><input value="010xxxxxxx"></div>
+      <div class="field"><label>العنوان الافتراضي</label><input value="كفر الدوار، البحيرة"></div>
+      <button class="btn btn-primary" onclick="toast('تم حفظ بيانات حسابك')">حفظ التعديلات</button>
+    </div>
+  </div>`;
+}
+
+/* ============ TECHNICIAN ============ */
+const TECH_NAV = [
+  {id:'profile', label:'الملف الشخصي', ic:'fa-id-card'},
+  {id:'requests', label:'الطلبات الواردة', ic:'fa-inbox'},
+  {id:'current', label:'الطلب الحالي', ic:'fa-truck-fast'},
+  {id:'earnings', label:'الأرباح والسجل', ic:'fa-sack-dollar'},
+  {id:'chat', label:'التواصل مع العميل', ic:'fa-comments'},
+  {id:'notifications', label:'الإشعارات', ic:'fa-bell'},
+];
+function renderTechnician(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = `<div class="side-eyebrow">حساب الأسطى</div>` + TECH_NAV.map(n=>`
+    <button class="side-btn ${state.technicianView===n.id?'active':''}" onclick="goTech('${n.id}')">
+      <span class="ic"><i class="fa-solid ${n.ic}"></i></span>${n.label}
+    </button>`).join('');
+
+  const c = document.getElementById('content');
+  if(state.technicianView==='profile') c.innerHTML = viewTechProfile();
+  else if(state.technicianView==='requests') c.innerHTML = viewTechRequests();
+  else if(state.technicianView==='current') c.innerHTML = viewTechCurrent();
+  else if(state.technicianView==='earnings') c.innerHTML = viewTechEarnings();
+  else if(state.technicianView==='chat') c.innerHTML = viewTechChat();
+  else if(state.technicianView==='notifications') c.innerHTML = viewTechNotifications();
+}
+function goTech(v){ state.technicianView=v; render(); }
+
+function viewTechProfile(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>الملف الشخصي</h1><p>بيانات ملفك تظهر للعملاء عند البحث عن فني.</p></div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="field"><label>الاسم الكامل</label><input value="كريم عبد الرحمن"></div>
+        <div class="field"><label>التخصص</label>
+          <select><option>كهرباء</option><option>سباكة</option><option>تكييف وتبريد</option><option>دهانات</option><option>نجارة</option></select>
+        </div>
+        <div class="field"><label>سنوات الخبرة</label><input value="9"></div>
+        <div class="field"><label>نبذة مختصرة</label><textarea>فني كهرباء معتمد، خبرة 9 سنوات في الأعطال المنزلية والتمديدات.</textarea></div>
+        <button class="btn btn-primary" onclick="toast('تم حفظ التعديلات على ملفك الشخصي')">حفظ التعديلات</button>
+      </div>
+      <div class="card">
+        <div style="font-weight:800; margin-bottom:10px;">الشهادات والتراخيص</div>
+        <p class="subtle">ارفع صور الشهادات أو رخصة مزاولة المهنة لزيادة ثقة العملاء وتوثيق حسابك.</p>
+        <div style="border:2px dashed var(--line); border-radius:12px; padding:26px; text-align:center; margin-top:12px;" onclick="toast('تم رفع الملف بنجاح، بانتظار مراجعة الإدارة')">
+          <div style="font-size:24px; color:var(--brass);"><i class="fa-solid fa-paperclip"></i></div>
+          <div class="subtle" style="margin-top:6px;">اضغط لرفع صورة الشهادة (PDF أو JPG)</div>
+        </div>
+        <div class="tag tag-green" style="margin-top:14px;"><i class="fa-solid fa-circle-check"></i> حساب موثّق</div>
+        <hr class="hr">
+        <div style="font-weight:800; margin-bottom:8px;">حالة التوفر</div>
+        <div class="toggle-row"><span>متاح لاستقبال طلبات جديدة</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewTechRequests(){
+  const incoming = state.orders.filter(o=>o.techId==='t1' && o.status==='pending');
+  const awaitingCustomer = state.orders.filter(o=>o.techId==='t1' && (o.status==='price_proposed' || o.status==='negotiating'));
+  return `
+  <div class="view">
+    <div class="page-head"><h1>الطلبات الواردة</h1><p>راجع الطلبات الجديدة في منطقتك، وحدد السعر المناسب حسب حجم الشغل.</p></div>
+    ${incoming.length===0? `<div class="empty"><div class="ic"><i class="fa-solid fa-inbox"></i></div>لا توجد طلبات جديدة حالياً.</div>` : incoming.map(o=>`
+      <div class="ticket">
+        <div class="ticket-head">
+          <div><div class="ticket-id">${o.id}</div><div class="ticket-service"><i class="fa-solid ${o.serviceIcon}"></i> ${o.service}</div></div>
+          <div class="stamp pending">جديد</div>
+        </div>
+        <div class="ticket-row"><span>العميل</span><b>${o.customer}</b></div>
+        <div class="ticket-row"><span>العنوان</span><b>${o.address}</b></div>
+        <div class="ticket-row"><span>متوسط السعر العام لهذه الخدمة</span><b>~${o.estimatedPrice} ج.م</b></div>
+        ${o._settingPrice ? `
+        <div class="avg-note" style="margin-top:10px;"><i class="fa-solid fa-circle-info"></i><span>هذا رقم متوسط فقط، حدد السعر الفعلي المناسب لحجم العطل — سيظهر للعميل ليوافق عليه.</span></div>
+        <div style="display:flex; gap:10px; align-items:flex-end; margin-top:10px;">
+          <div class="field" style="margin-bottom:0; flex:1;"><label>السعر المقترح (ج.م)</label><input type="number" id="priceInput_${o.id}" value="${o.estimatedPrice}"></div>
+          <button class="btn btn-primary" onclick="submitTechPrice('${o.id}')"><i class="fa-solid fa-paper-plane"></i> إرسال السعر للعميل</button>
+        </div>
+        ` : `
+        <div class="ticket-actions">
+          <button class="btn btn-success btn-sm" onclick="techRespond('${o.id}', true)"><i class="fa-solid fa-check"></i> قبول وتحديد السعر</button>
+          <button class="btn btn-danger btn-sm" onclick="techRespond('${o.id}', false)"><i class="fa-solid fa-xmark"></i> رفض</button>
+        </div>
+        `}
+      </div>`).join('')}
+
+    ${awaitingCustomer.length>0 ? `
+    <div class="section-title"><span class="bar"></span>بانتظار موافقة العميل على السعر</div>
+    ${awaitingCustomer.map(o=>`
+      <div class="ticket">
+        <div class="ticket-head">
+          <div><div class="ticket-id">${o.id}</div><div class="ticket-service"><i class="fa-solid ${o.serviceIcon}"></i> ${o.service}</div></div>
+          <div class="stamp ${STATUS_META[o.status].cls}">${STATUS_META[o.status].label}</div>
+        </div>
+        <div class="ticket-row"><span>العميل</span><b>${o.customer}</b></div>
+        <div class="ticket-row"><span>السعر المقترح</span><b style="color:var(--brass);">${o.proposedPrice} ج.م</b></div>
+        <div class="ticket-actions"><button class="btn btn-outline btn-sm" onclick="goTech('chat')"><i class="fa-solid fa-comments"></i> مراسلة العميل</button></div>
+      </div>`).join('')}
+    ` : ''}
+  </div>`;
+}
+function techRespond(id, accept){
+  const o = state.orders.find(x=>x.id===id);
+  if(!accept){
+    o.status = 'rejected';
+    state.notifications.customer.unshift({id:Date.now(), text:'اعتذر الفني عن تنفيذ الطلب '+id, time:'الآن', unread:true});
+    toast('تم رفض الطلب');
+    render();
+    return;
+  }
+  o._settingPrice = true;
+  render();
+}
+function submitTechPrice(id){
+  const o = state.orders.find(x=>x.id===id);
+  const input = document.getElementById('priceInput_'+id);
+  const price = parseInt(input.value) || o.estimatedPrice;
+  o.proposedPrice = price;
+  o.status = 'price_proposed';
+  o._settingPrice = false;
+  state.notifications.customer.unshift({id:Date.now(), text:'حدد الفني '+o.techName+' سعر طلبك رقم '+id+': '+price+' ج.م', time:'الآن', unread:true});
+  toast('تم إرسال السعر للعميل، بانتظار موافقته');
+  render();
+}
+
+function viewTechCurrent(){
+  const o = state.orders.find(x=>x.techId==='t1' && ['accepted','on_the_way','in_progress'].includes(x.status));
+  if(!o) return `<div class="view"><div class="empty"><div class="ic"><i class="fa-solid fa-circle-check"></i></div>لا يوجد طلب جارٍ حالياً.</div></div>`;
+  const nextMap = {accepted:'on_the_way', on_the_way:'in_progress', in_progress:'completed'};
+  const nextLabelMap = {accepted:'بدء التوجه (في الطريق)', on_the_way:'بدء العمل', in_progress:'إنهاء العمل (مكتمل)'};
+  const meta = STATUS_META[o.status];
+  return `
+  <div class="view">
+    <div class="page-head"><h1>الطلب الحالي</h1><p>حدّث حالة العمل أولاً بأول ليتابعها العميل مباشرة.</p></div>
+    <div class="ticket">
+      <div class="ticket-head">
+        <div><div class="ticket-id">${o.id}</div><div class="ticket-service"><i class="fa-solid ${o.serviceIcon}"></i> ${o.service}</div></div>
+        <div class="stamp ${meta.cls}">${meta.label}</div>
+      </div>
+      <div class="ticket-row"><span>العميل</span><b>${o.customer}</b></div>
+      <div class="ticket-row"><span>العنوان</span><b>${o.address}</b></div>
+      <div class="ticket-row"><span>السعر المتفق عليه</span><b style="color:var(--brass);">${o.price} ج.م</b></div>
+      <div class="ticket-actions">
+        ${nextMap[o.status] ? `<button class="btn btn-primary" onclick="advanceOrder('${o.id}')">${nextLabelMap[o.status]}</button>` : ''}
+        <button class="btn btn-outline btn-sm" onclick="goTech('chat')"><i class="fa-solid fa-comments"></i> مراسلة العميل</button>
+      </div>
+    </div>
+  </div>`;
+}
+function advanceOrder(id){
+  const o = state.orders.find(x=>x.id===id);
+  const nextMap = {accepted:'on_the_way', on_the_way:'in_progress', in_progress:'completed'};
+  const labels = {on_the_way:'الفني في الطريق إليك الآن', in_progress:'بدأ الفني تنفيذ العمل', completed:'تم إنجاز الخدمة بنجاح'};
+  o.status = nextMap[o.status];
+  state.notifications.customer.unshift({id:Date.now(), text: labels[o.status]+' — طلب '+o.id, time:'الآن', unread:true});
+  toast('تم تحديث حالة الطلب: '+STATUS_META[o.status].label);
+  render();
+}
+
+function viewTechEarnings(){
+  const myOrders = state.orders.filter(o=>o.techId==='t1');
+  const total = myOrders.filter(o=>o.status==='completed').reduce((a,b)=>a+(b.price||0),0) + 640;
+  return `
+  <div class="view">
+    <div class="page-head"><h1>الأرباح وسجل الطلبات</h1><p>ملخص أرباحك وسجل تنفيذ الطلبات.</p></div>
+    <div class="grid grid-3">
+      <div class="stat-card"><div class="num">${total} ج.م</div><div class="lbl">إجمالي الأرباح هذا الشهر</div></div>
+      <div class="stat-card"><div class="num">${myOrders.length+18}</div><div class="lbl">عدد الطلبات المنفذة</div></div>
+      <div class="stat-card"><div class="num">4.9 <i class="fa-solid fa-star" style="color:var(--amber); font-size:20px;"></i></div><div class="lbl">متوسط تقييم العملاء</div></div>
+    </div>
+    <div class="section-title"><span class="bar"></span>سجل الطلبات</div>
+    <table>
+      <tr><th>رقم الطلب</th><th>العميل</th><th>الحالة</th><th>السعر</th><th>التاريخ</th></tr>
+      ${myOrders.map(o=>`<tr><td>${o.id}</td><td>${o.customer}</td><td><span class="tag ${o.status==='completed'?'tag-green':'tag-amber'}">${STATUS_META[o.status].label}</span></td><td>${o.price?o.price+' ج.م':'—'}</td><td>${o.date}</td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function viewTechChat(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>التواصل مع العميل</h1></div>
+    <div class="chat-box" style="max-width:560px;">
+      <div style="padding:12px 16px; border-bottom:1px solid var(--line); font-weight:700;"><i class="fa-solid fa-comments" style="color:var(--brass);"></i> محادثة مع العميل (أنت)</div>
+      <div class="chat-msgs" id="chatMsgsT">
+        ${state.chat.map(m=>`<div class="msg ${m.from==='me'?'them':'me'}">${m.text}</div>`).join('')}
+      </div>
+      <div class="chat-input">
+        <input id="chatInputT" placeholder="اكتب رسالتك...">
+        <button class="btn btn-primary btn-sm" onclick="sendChatTech()">إرسال</button>
+      </div>
+    </div>
+  </div>`;
+}
+function sendChatTech(){
+  const inp = document.getElementById('chatInputT');
+  if(!inp.value.trim()) return;
+  state.chat.push({from:'them', text:inp.value});
+  inp.value='';
+  render();
+}
+
+function viewTechNotifications(){
+  state.notifications.technician.forEach(n=>n.unread=false);
+  return `
+  <div class="view">
+    <div class="page-head"><h1>الإشعارات</h1></div>
+    ${state.notifications.technician.map(n=>`
+      <div class="card" style="margin-bottom:10px; display:flex; justify-content:space-between;">
+        <span><i class="fa-solid fa-bell" style="color:var(--brass);"></i> ${n.text}</span><span class="subtle">${n.time}</span>
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ============ ADMIN ============ */
+const ADMIN_NAV = [
+  {id:'dashboard', label:'لوحة الإحصائيات', ic:'fa-chart-line'},
+  {id:'users', label:'إدارة المستخدمين', ic:'fa-users'},
+  {id:'approvals', label:'مراجعة الفنيين', ic:'fa-user-check'},
+  {id:'services', label:'الخدمات والأسعار', ic:'fa-tags'},
+  {id:'monitor', label:'مراقبة الطلبات', ic:'fa-receipt'},
+  {id:'complaints', label:'إدارة الشكاوى', ic:'fa-triangle-exclamation'},
+  {id:'broadcast', label:'إشعارات جماعية', ic:'fa-bullhorn'},
+];
+function renderAdmin(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = `<div class="side-eyebrow">لوحة الإدارة</div>` + ADMIN_NAV.map(n=>`
+    <button class="side-btn ${state.adminView===n.id?'active':''}" onclick="goAdmin('${n.id}')">
+      <span class="ic"><i class="fa-solid ${n.ic}"></i></span>${n.label}
+    </button>`).join('');
+
+  const c = document.getElementById('content');
+  if(state.adminView==='dashboard') c.innerHTML = viewAdminDashboard();
+  else if(state.adminView==='users') c.innerHTML = viewAdminUsers();
+  else if(state.adminView==='approvals') c.innerHTML = viewAdminApprovals();
+  else if(state.adminView==='services') c.innerHTML = viewAdminServices();
+  else if(state.adminView==='monitor') c.innerHTML = viewAdminMonitor();
+  else if(state.adminView==='complaints') c.innerHTML = viewAdminComplaints();
+  else if(state.adminView==='broadcast') c.innerHTML = viewAdminBroadcast();
+}
+function goAdmin(v){ state.adminView=v; render(); }
+
+function viewAdminDashboard(){
+  const bars = [40,65,52,80,71,90,60];
+  const days = ['سبت','أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة'];
+  return `
+  <div class="view">
+    <div class="page-head"><h1>لوحة الإحصائيات</h1><p>نظرة عامة على أداء المنصة.</p></div>
+    <div class="grid grid-4">
+      <div class="stat-card"><div class="num">1,284</div><div class="lbl">إجمالي المستخدمين</div></div>
+      <div class="stat-card"><div class="num">312</div><div class="lbl">فني نشط</div></div>
+      <div class="stat-card"><div class="num">${state.orders.length+96}</div><div class="lbl">طلب هذا الشهر</div></div>
+      <div class="stat-card"><div class="num">4.7 <i class="fa-solid fa-star" style="color:var(--amber); font-size:20px;"></i></div><div class="lbl">متوسط رضا العملاء</div></div>
+    </div>
+    <div class="section-title"><span class="bar"></span>الطلبات خلال الأسبوع</div>
+    <div class="card">
+      <div class="bar-chart">
+        ${bars.map((b,i)=>`<div class="col"><div class="bar" style="height:${b}%"></div><div class="bar-lbl">${days[i]}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <div class="card">
+        <div style="font-weight:800; margin-bottom:10px;">الطلبات حسب الخدمة</div>
+        ${SERVICES.map(s=>`<div class="ticket-row"><span><i class="fa-solid ${s.icon}" style="color:var(--brass); width:16px;"></i> ${s.name}</span><b>${Math.floor(Math.random()*40+10)} طلب</b></div>`).join('')}
+      </div>
+      <div class="card">
+        <div style="font-weight:800; margin-bottom:10px;">تنبيهات تحتاج إجراء</div>
+        <div class="ticket-row"><span><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber);"></i> فنيون بانتظار المراجعة</span><b>${state.pendingTechnicians.length}</b></div>
+        <div class="ticket-row"><span><i class="fa-solid fa-receipt" style="color:var(--red);"></i> شكاوى مفتوحة</span><b>${state.complaints.filter(c=>c.status==='open').length}</b></div>
+        <div class="ticket-row"><span><i class="fa-solid fa-clock" style="color:#9a9a9a;"></i> طلبات معلّقة</span><b>${state.orders.filter(o=>o.status==='pending').length}</b></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewAdminUsers(){
+  const users = [
+    {name:'سارة أحمد', type:'عميل', joined:'2026-02-11', status:'نشط'},
+    {name:'كريم عبد الرحمن', type:'فني', joined:'2025-11-03', status:'نشط'},
+    {name:'مصطفى علي', type:'عميل', joined:'2026-05-20', status:'نشط'},
+    {name:'أحمد جمال', type:'فني', joined:'2025-09-14', status:'موقوف'},
+  ];
+  return `
+  <div class="view">
+    <div class="page-head"><h1>إدارة المستخدمين والفنيين</h1><p>عرض وإدارة جميع الحسابات المسجّلة على المنصة.</p></div>
+    <table>
+      <tr><th>الاسم</th><th>النوع</th><th>تاريخ الانضمام</th><th>الحالة</th><th>إجراء</th></tr>
+      ${users.map(u=>`<tr>
+        <td>${u.name}</td><td>${u.type}</td><td>${u.joined}</td>
+        <td><span class="tag ${u.status==='نشط'?'tag-green':'tag-red'}">${u.status}</span></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="toast('تم تحديث حالة الحساب')">${u.status==='نشط'?'إيقاف':'تفعيل'}</button></td>
+      </tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function viewAdminApprovals(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>مراجعة طلبات انضمام الفنيين</h1><p>راجع الشهادات والبيانات قبل الموافقة على انضمام الفني للمنصة.</p></div>
+    ${state.pendingTechnicians.length===0 ? `<div class="empty"><div class="ic"><i class="fa-solid fa-circle-check"></i></div>لا توجد طلبات معلّقة.</div>` : state.pendingTechnicians.map(p=>`
+      <div class="card" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-weight:800;">${p.name} — <span class="subtle">${SERVICES.find(s=>s.id===p.service)?.name}</span></div>
+          <div class="subtle"><i class="fa-solid fa-phone"></i> ${p.phone} &nbsp;·&nbsp; <i class="fa-solid fa-paperclip"></i> ${p.cert} &nbsp;·&nbsp; تاريخ التقديم: ${p.date}</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-success btn-sm" onclick="approveTech('${p.id}')">موافقة</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectTech('${p.id}')">رفض</button>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+function approveTech(id){ state.pendingTechnicians = state.pendingTechnicians.filter(p=>p.id!==id); toast('تمت الموافقة على الفني وتفعيل حسابه'); render(); }
+function rejectTech(id){ state.pendingTechnicians = state.pendingTechnicians.filter(p=>p.id!==id); toast('تم رفض طلب الانضمام'); render(); }
+
+function viewAdminServices(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>إدارة الخدمات ومتوسطات الأسعار</h1><p>تحكم في قائمة الخدمات المتاحة ومتوسط السعر الاسترشادي لكل منها (السعر النهائي دائماً بيد الفني).</p></div>
+    <table>
+      <tr><th>الخدمة</th><th>متوسط السعر الاسترشادي</th><th>الحالة</th><th>إجراء</th></tr>
+      ${state.servicePrices.map(s=>`<tr>
+        <td><i class="fa-solid ${SERVICES.find(x=>x.id===s.id).icon}" style="color:var(--brass);"></i> ${s.name}</td>
+        <td><input style="width:100px; padding:6px 8px; border:1px solid var(--line); border-radius:8px;" value="${s.base}"> ج.م</td>
+        <td><span class="tag tag-green">مفعّلة</span></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="toast('تم حفظ متوسط السعر الجديد لخدمة ${s.name}')">حفظ</button></td>
+      </tr>`).join('')}
+    </table>
+    <button class="btn btn-outline" style="margin-top:14px;" onclick="toast('يمكنك إضافة خدمة جديدة من هنا')"><i class="fa-solid fa-plus"></i> إضافة خدمة جديدة</button>
+  </div>`;
+}
+
+function viewAdminMonitor(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>مراقبة الطلبات</h1><p>تابع كل الطلبات الجارية على المنصة لحظة بلحظة.</p></div>
+    <table>
+      <tr><th>رقم الطلب</th><th>العميل</th><th>الفني</th><th>الخدمة</th><th>الحالة</th><th>السعر</th></tr>
+      ${state.orders.map(o=>`<tr>
+        <td>${o.id}</td><td>${o.customer}</td><td>${o.techName}</td><td><i class="fa-solid ${o.serviceIcon}" style="color:var(--brass);"></i> ${o.service}</td>
+        <td><span class="tag ${o.status==='completed'?'tag-green':o.status==='rejected'?'tag-red':'tag-amber'}">${STATUS_META[o.status].label}</span></td>
+        <td>${o.price?o.price+' ج.م':'~'+o.estimatedPrice+' (متوسط)'}</td>
+      </tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function viewAdminComplaints(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>إدارة الشكاوى</h1><p>راجع بلاغات العملاء والفنيين واتخذ الإجراء المناسب.</p></div>
+    ${state.complaints.length===0? `<div class="empty"><div class="ic"><i class="fa-solid fa-circle-check"></i></div>لا توجد شكاوى مفتوحة.</div>` : state.complaints.map(c=>`
+      <div class="card" style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-weight:800;">${c.id} — من ${c.from}</div>
+          <span class="tag ${c.status==='open'?'tag-amber':'tag-green'}">${c.status==='open'?'مفتوحة':'تم الحل'}</span>
+        </div>
+        <div class="subtle" style="margin:6px 0;">بخصوص: ${c.about}</div>
+        <p style="font-size:14px;">${c.text}</p>
+        ${c.status==='open' ? `<button class="btn btn-success btn-sm" onclick="resolveComplaint('${c.id}')">تحديد كمحلولة</button>` : ''}
+      </div>`).join('')}
+  </div>`;
+}
+function resolveComplaint(id){ state.complaints.find(c=>c.id===id).status='resolved'; toast('تم تحديد الشكوى كمحلولة'); render(); }
+
+function viewAdminBroadcast(){
+  return `
+  <div class="view">
+    <div class="page-head"><h1>إرسال إشعارات جماعية</h1><p>أرسل رسالة لكل العملاء أو كل الفنيين دفعة واحدة.</p></div>
+    <div class="card" style="max-width:560px;">
+      <div class="field"><label>الفئة المستهدفة</label>
+        <select id="bcTarget"><option>كل العملاء</option><option>كل الفنيين</option><option>الجميع</option></select>
+      </div>
+      <div class="field"><label>نص الإشعار</label><textarea id="bcText" placeholder="مثال: عرض خصم 20% على خدمات الصيانة هذا الأسبوع"></textarea></div>
+      <button class="btn btn-primary btn-block" onclick="sendBroadcast()">إرسال الإشعار</button>
+    </div>
+  </div>`;
+}
+function sendBroadcast(){
+  const target = document.getElementById('bcTarget').value;
+  const text = document.getElementById('bcText').value || 'إشعار جديد من إدارة أسطى';
+  if(target!=='كل الفنيين') state.notifications.customer.unshift({id:Date.now(), text, time:'الآن', unread:true});
+  if(target!=='كل العملاء') state.notifications.technician.unshift({id:Date.now(), text, time:'الآن', unread:true});
+  toast('تم إرسال الإشعار إلى: '+target);
+  document.getElementById('bcText').value='';
+}
+
+/* ============ INIT ============ */
+render();
+</script>
+</body>
+</html>
