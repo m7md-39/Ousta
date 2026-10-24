@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ousta | أُسطى — منصة الصيانة المنزلية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@300;400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<div id="appRoot">
+  <div class="topbar">
+    <a class="brand brand--logo" href="./" aria-label="Ousta | أُسطى — الصفحة الرئيسية">
+      <img class="brand-logo" src="assets/logo.png" width="881" height="535" alt="Ousta | أُسطى">
+    </a>
+    <div class="role-switch" id="roleSwitch"></div>
+    <div class="topbar-right">
+      <div class="bell-wrap">
+        <button class="bell-btn" id="bellBtn" aria-label="الإشعارات"><i class="fa-solid fa-bell"></i><span class="bell-dot" id="bellDot" style="display:none">0</span></button>
+      </div>
+      <div class="profile-wrap">
+        <button class="profile-btn" id="profileBtn" onclick="toggleProfileMenu()">
+          <span class="profile-ic" id="profileIc"><i class="fa-solid fa-user"></i></span>
+          <span class="profile-name" id="profileName">حسابي</span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <div class="profile-menu" id="profileMenu" style="display:none;">
+          <button onclick="goProfileFromMenu()"><i class="fa-solid fa-id-card"></i>الملف الشخصي</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<!-- Classic (non-module) scripts, loaded in dependency order and sharing one global scope,
+     so the app works when index.html is simply double-clicked (no server needed). -->
+<script src="js/data/services.js"></script>
+<script src="js/data/technicians.js"></script>
+<script src="js/data/constants.js"></script>
+<script src="js/state.js"></script>
+<script src="js/utils/helpers.js"></script>
+<script src="js/components/problem-photos.js"></script>
+<script src="js/components/topbar.js"></script>
+<script src="js/components/notifications.js"></script>
+<script src="js/pages/customer/index.js"></script>
+<script src="js/pages/customer/services.js"></script>
+<script src="js/pages/customer/search.js"></script>
+<script src="js/pages/customer/location.js"></script>
+<script src="js/pages/customer/booking.js"></script>
+<script src="js/pages/customer/payment.js"></script>
+<script src="js/pages/customer/tracking.js"></script>
+<script src="js/pages/customer/history.js"></script>
+<script src="js/pages/customer/notifications.js"></script>
+<script src="js/pages/customer/support.js"></script>
+<script src="js/pages/customer/profile.js"></script>
+<script src="js/pages/technician/index.js"></script>
+<script src="js/pages/technician/profile.js"></script>
+<script src="js/pages/technician/requests.js"></script>
+<script src="js/pages/technician/current.js"></script>
+<script src="js/pages/technician/earnings.js"></script>
+<script src="js/pages/technician/chat.js"></script>
+<script src="js/pages/technician/notifications.js"></script>
+<script src="js/pages/admin/index.js"></script>
+<script src="js/pages/admin/dashboard.js"></script>
+<script src="js/pages/admin/users.js"></script>
+<script src="js/pages/admin/approvals.js"></script>
+<script src="js/pages/admin/services.js"></script>
+<script src="js/pages/admin/monitor.js"></script>
+<script src="js/pages/admin/complaints.js"></script>
+<script src="js/pages/admin/broadcast.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

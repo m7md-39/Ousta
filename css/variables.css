@@ -1,0 +1,21 @@
+/* Design tokens (unchanged from the original palette) */
+:root{
+  /* ===== Talabat-inspired palette =====
+     Primary orange, near-black ink, clean white surfaces, a touch of amber accent. */
+  --ink:#1A1A1A;
+  --paper:#FFFFFF;
+  --paper-2:#F6F6F8;
+  --navy:#1A1A1A;      /* dark surface (was navy, now Talabat-style near-black) */
+  --navy-2:#2B2B2D;
+  --brass:#FF5A00;     /* primary orange */
+  --brass-2:#FF7A2E;   /* hover orange */
+  --amber:#FFC22E;     /* secondary amber accent */
+  --green:#1DB86A;
+  --red:#E5484D;
+  --line: rgba(26,26,26,0.12);
+  --shadow: 0 10px 26px rgba(26,26,26,0.10);
+  --radius: 14px;
+  --disp: 'Cairo', sans-serif;
+  --body: 'Tajawal', sans-serif;
+  --mono: 'IBM Plex Sans Arabic', sans-serif;
+}
