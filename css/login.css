@@ -1,0 +1,81 @@
+/* ===== Login screen — always fits one viewport (no scrolling) ===== */
+body.login-mode #appRoot{ display:none; }
+body:not(.login-mode) .login-screen{ display:none; }
+body.login-mode{ overflow:hidden; height:100vh; height:100dvh; }
+
+.login-screen{
+  position:fixed; inset:0; height:100vh; height:100dvh; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(8px, 2vh, 24px) clamp(10px, 4vw, 24px);
+  background:
+    radial-gradient(circle at 85% 12%, rgba(255,90,0,.38), transparent 42%),
+    radial-gradient(circle at 10% 95%, rgba(255,194,46,.18), transparent 40%),
+    var(--ink);
+}
+.login-card{
+  --gap: clamp(6px, 1.4vh, 14px);
+  --field-h: clamp(40px, 6vh, 50px);
+  width:100%; max-width:420px; max-height:100%;
+  background:#fff; border-radius:18px; box-shadow:0 24px 60px rgba(0,0,0,.35);
+  border-top:4px solid var(--brass);
+  padding:clamp(14px, 3vh, 32px) clamp(16px, 5vw, 32px);
+  display:flex; flex-direction:column; gap:var(--gap); overflow:hidden;
+}
+.login-head{ text-align:center; display:flex; flex-direction:column; align-items:center; gap:clamp(2px, .8vh, 8px); }
+.login-logo{ background:var(--ink); border-radius:14px; padding:clamp(3px, .8vh, 8px) clamp(12px, 3vw, 20px); }
+.login-logo img{ display:block; height:clamp(34px, 8vh, 64px); width:auto; aspect-ratio:881/535; object-fit:contain; }
+.login-head h1{ font-family:var(--disp); font-weight:800; font-size:clamp(18px, 3.2vh, 25px); line-height:1.2; }
+.login-head p{ color:#7a7a7a; font-size:clamp(12.5px, 1.9vh, 14.5px); }
+
+.login-form{ display:flex; flex-direction:column; gap:var(--gap); min-height:0; }
+.lf-field label{ display:block; font-size:clamp(12.5px, 1.9vh, 14px); font-weight:700; margin-bottom:4px; }
+.lf-input{ position:relative; }
+.lf-input input{
+  width:100%; height:var(--field-h); border:1.5px solid var(--line); border-radius:12px; background:var(--paper-2);
+  padding:0 42px; font-size:16px; /* 16px prevents iOS zoom-on-focus */ color:var(--ink);
+  transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.lf-input input:focus{ outline:none; border-color:var(--brass); background:#fff; box-shadow:0 0 0 3px rgba(255,90,0,.15); }
+.lf-ic{ position:absolute; top:50%; right:14px; transform:translateY(-50%); color:#9a9a9a; font-size:14px; pointer-events:none; }
+.lf-eye{
+  position:absolute; top:50%; left:4px; transform:translateY(-50%); width:38px; height:calc(var(--field-h) - 8px);
+  background:transparent; color:#7a7a7a; border-radius:10px; font-size:15px;
+}
+.lf-eye:hover{ color:var(--brass); background:rgba(255,90,0,.08); }
+.lf-field.has-error .lf-input input{ border-color:var(--red); background:#fff; }
+.lf-field.has-error .lf-input input:focus{ box-shadow:0 0 0 3px rgba(229,72,77,.18); }
+/* Reserved line so an error message never changes the card height */
+.lf-err{ min-height:17px; margin-top:3px; font-size:12.5px; line-height:1.35; color:var(--red); font-weight:600; }
+
+.lf-submit{
+  height:var(--field-h); border-radius:12px; background:var(--brass); color:#fff; font-size:16px; font-weight:800; font-family:var(--disp);
+  display:flex; align-items:center; justify-content:center; gap:10px; transition:background .15s, transform .1s;
+}
+.lf-submit:hover{ background:var(--brass-2); }
+.lf-submit:active{ transform:scale(.99); }
+
+.lf-demo{ display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+.lf-demo-tag{ font-size:12px; color:#7a7a7a; margin-inline-end:2px; }
+.lf-chip{ background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:12.5px; font-weight:700; color:var(--ink); }
+.lf-chip:hover{ border-color:var(--brass); color:var(--brass); }
+.login-foot{ font-size:11.5px; color:#9a9a9a; text-align:center; line-height:1.4; }
+.login-foot i{ color:var(--amber); }
+
+/* Short screens (small phones, browser chrome): trim non-essential text and spacing */
+@media (max-height:680px){ .login-head p{ display:none; } .lf-err{ min-height:15px; font-size:12px; } }
+@media (max-height:600px){ .login-foot{ display:none; } .login-card{ border-top-width:3px; } }
+@media (max-height:540px){ .lf-demo-tag{ display:none; } .lf-field label{ margin-bottom:2px; } }
+
+/* Landscape phones / very short viewports: two columns (brand | form) instead of one tall stack */
+@media (max-height:480px) and (min-width:560px){
+  .login-card{ max-width:720px; display:grid; grid-template-columns:.8fr 1.2fr; align-items:center; column-gap:clamp(16px, 4vw, 32px); }
+  .login-head{ grid-column:1; }
+  .login-head p{ display:block; }
+  .login-form{ grid-column:2; }
+  .login-foot{ display:none; }
+  .lf-demo-tag{ display:inline; }
+}
+@media (max-height:340px){ .lf-field label{ display:none; } .lf-err{ min-height:13px; } }
+@media (max-width:340px){ .lf-demo-tag{ display:none; } }
+@media (min-width:900px) and (min-height:760px){ .login-card{ max-width:460px; } }
+@media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
