@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ousta | أُسطى</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<noscript><meta http-equiv="refresh" content="0; url=login.html"></noscript>
+</head>
+<body data-root="">
+<!-- Entry point: send signed-in users to their home page, everyone else to the login page. -->
+<script src="js/auth.js"></script>
+<script>
+  const s = getSession();
+  location.replace(s ? ROLE_HOME[s.role] : 'login.html');
+</script>
+<p><a href="login.html">تسجيل الدخول</a></p>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<title>إنشاء حساب | Ousta | أُسطى</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@300;400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-mode" data-root="">
+
+<div id="loginRoot" class="login-screen">
+  <div class="login-shell is-signup">
+    <aside class="login-brand">
+      <div class="login-logo"><img src="assets/logo.png" width="881" height="535" alt="Ousta | أُسطى"></div>
+      <h2>انضم إلى أُسطى في دقيقة</h2>
+      <p>سواء كنت عميلًا تبحث عن فني موثوق، أو أسطى تريد المزيد من الشغل — حسابك جاهز بخطوات بسيطة.</p>
+      <ul class="login-points">
+        <li><i class="fa-solid fa-circle-check"></i> تسجيل مجاني وسريع</li>
+        <li><i class="fa-solid fa-circle-check"></i> بياناتك تُشارك فقط مع الفني المعيّن لطلبك</li>
+        <li><i class="fa-solid fa-circle-check"></i> سياسات إلغاء وتعديل واضحة</li>
+      </ul>
+    </aside>
+    <main class="login-card">
+      <header class="login-head">
+        <div class="login-logo login-logo--mobile"><img src="assets/logo.png" width="881" height="535" alt="Ousta | أُسطى"></div>
+        <h1>إنشاء حساب جديد</h1>
+        <p>املأ البيانات التالية للبدء</p>
+      </header>
+      <div class="su-progress" aria-live="polite">
+        <div class="su-progress-top"><span>الخطوة <b id="suStepNum">1</b> من 3</span><span id="suStepName">نوع الحساب</span></div>
+        <div class="su-bars" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+      </div>
+      <form class="login-form" id="signupForm" novalidate autocomplete="on">
+        <!-- Step 1: account type + name -->
+        <section class="su-step" data-step="1" data-name="نوع الحساب">
+          <div class="lf-field">
+            <label id="suRoleLbl">نوع الحساب</label>
+            <div class="lf-role" role="radiogroup" aria-labelledby="suRoleLbl">
+              <label><input type="radio" name="role" value="customer" checked><span><i class="fa-solid fa-user"></i> عميل</span></label>
+              <label><input type="radio" name="role" value="technician"><span><i class="fa-solid fa-screwdriver-wrench"></i> أسطى (فني)</span></label>
+            </div>
+          </div>
+          <div class="lf-field" id="suNameField">
+            <label for="suName">الاسم الكامل</label>
+            <div class="lf-input"><i class="fa-solid fa-id-card lf-ic" aria-hidden="true"></i>
+              <input id="suName" name="name" type="text" autocomplete="name" enterkeyhint="next" placeholder="مثال: أحمد محمد"></div>
+            <div class="lf-err" role="alert"></div>
+          </div>
+        </section>
+        <!-- Step 2: contact -->
+        <section class="su-step" data-step="2" data-name="بيانات التواصل" hidden>
+          <div class="lf-field" id="suEmailField">
+            <label for="suEmail">البريد الإلكتروني</label>
+            <div class="lf-input"><i class="fa-solid fa-envelope lf-ic" aria-hidden="true"></i>
+              <input id="suEmail" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" enterkeyhint="next" placeholder="name@example.com"></div>
+            <div class="lf-err" role="alert"></div>
+          </div>
+          <div class="lf-field" id="suPhoneField">
+            <label for="suPhone">رقم الموبايل</label>
+            <div class="lf-input"><i class="fa-solid fa-phone lf-ic" aria-hidden="true"></i>
+              <input id="suPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" enterkeyhint="next" placeholder="01012345678"></div>
+            <div class="lf-err" role="alert"></div>
+          </div>
+        </section>
+        <!-- Step 3: password + terms -->
+        <section class="su-step" data-step="3" data-name="الأمان والموافقة" hidden>
+          <div class="lf-field" id="suPwField">
+            <label for="suPw">كلمة المرور</label>
+            <div class="lf-input"><i class="fa-solid fa-lock lf-ic" aria-hidden="true"></i>
+              <input id="suPw" name="password" type="password" autocomplete="new-password" enterkeyhint="next" placeholder="8 أحرف على الأقل، مع حرف ورقم">
+              <button type="button" class="lf-eye" id="suEye" aria-label="إظهار كلمة المرور" aria-pressed="false"><i class="fa-solid fa-eye"></i></button></div>
+            <div class="lf-strength" aria-hidden="true"><i id="suStrength"></i></div>
+            <div class="lf-err" role="alert"></div>
+          </div>
+          <div class="lf-field" id="suPw2Field">
+            <label for="suPw2">تأكيد كلمة المرور</label>
+            <div class="lf-input"><i class="fa-solid fa-lock lf-ic" aria-hidden="true"></i>
+              <input id="suPw2" name="password2" type="password" autocomplete="new-password" enterkeyhint="go" placeholder="أعد كتابة كلمة المرور"></div>
+            <div class="lf-err" role="alert"></div>
+          </div>
+          <div class="lf-field" id="suTermsField">
+            <label class="lf-terms" for="suTerms">
+              <input type="checkbox" id="suTerms" name="terms">
+              <span>أوافق على <a href="#" data-open-terms>الشروط والأحكام</a> و<a href="#" data-open-terms>سياسة الخصوصية</a>، بما فيها سياسة الإلغاء والتعديل.</span>
+            </label>
+            <div class="lf-err" role="alert"></div>
+          </div>
+          <div class="lf-success" id="suOk" role="status"></div>
+        </section>
+        <div class="lf-spacer"></div>
+        <div class="su-actions">
+          <button type="button" class="lf-back" id="suBack" hidden><i class="fa-solid fa-arrow-right" aria-hidden="true"></i><span>رجوع</span></button>
+          <button type="submit" class="lf-submit" id="suSubmit"><span>التالي</span><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+        </div>
+        <p class="lf-switch">لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a></p>
+      </form>
+      <p class="login-foot"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> وضع تجريبي: الحسابات تُحفظ داخل المتصفح فقط.</p>
+    </main>
+  </div>
+</div>
+
+<div class="terms-modal" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+  <div class="terms-box">
+    <h3 id="termsTitle">الشروط والأحكام وسياسة الخصوصية</h3>
+    <div class="terms-body">
+      <h4>1. استخدام المنصة</h4><p>أُسطى منصة تربط العملاء بفنيين مستقلين. يلتزم المستخدم بإدخال بيانات صحيحة وعدم إساءة استخدام الخدمة.</p>
+      <h4>2. مشاركة البيانات</h4><p>عند إرسال طلب خدمة تتم مشاركة رقم التواصل والعنوان مع الفني المعيّن للطلب فقط، لغرض تنفيذ الخدمة.</p>
+      <h4>3. سياسة الإلغاء والتعديل</h4><p>يمكن تعديل الطلب أو إلغاؤه قبل بدء التنفيذ. لا يحق للعميل إلغاء الطلب قبل موعد تنفيذ الخدمة بأقل من 3 ساعات.</p>
+      <h4>4. الأسعار والدفع</h4><p>السعر النهائي يحدده الفني ويظهر للعميل ليوافق عليه قبل بدء العمل.</p>
+      <h4>5. الخصوصية</h4><p>لا نبيع بياناتك لأي طرف ثالث، ويمكنك طلب حذف حسابك في أي وقت.</p>
+    </div>
+    <button type="button" class="terms-close" id="termsClose">فهمت</button>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/signup.js"></script>
+</body>
+</html>

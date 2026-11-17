@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<title>تسجيل الدخول | Ousta | أُسطى</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="256x256" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@300;400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-mode" data-root="">
+
+<div id="loginRoot" class="login-screen">
+  <div class="login-shell">
+    <aside class="login-brand" aria-hidden="false">
+      <div class="login-logo"><img src="assets/logo.png" width="881" height="535" alt="Ousta | أُسطى"></div>
+      <h2>أي صنعة… في إيد أُسطى موثوق</h2>
+      <p>احجز فني كهرباء أو سباكة أو تكييف قريب منك، وتابع طلبك لحظة بلحظة.</p>
+      <ul class="login-points">
+        <li><i class="fa-solid fa-circle-check"></i> فنيون موثّقون ومقيَّمون</li>
+        <li><i class="fa-solid fa-circle-check"></i> سعر واضح توافق عليه قبل البدء</li>
+        <li><i class="fa-solid fa-circle-check"></i> تتبّع مباشر وشات مع الأسطى</li>
+      </ul>
+    </aside>
+    <main class="login-card">
+      <header class="login-head">
+        <div class="login-logo login-logo--mobile"><img src="assets/logo.png" width="881" height="535" alt="Ousta | أُسطى"></div>
+        <h1>تسجيل الدخول</h1>
+        <p>أهلاً بعودتك، سجّل دخولك للمتابعة</p>
+      </header>
+      <form class="login-form" id="loginForm" novalidate autocomplete="on">
+        <div class="lf-field" id="lfIdField">
+          <label for="lfId">البريد الإلكتروني أو اسم المستخدم</label>
+          <div class="lf-input">
+            <i class="fa-solid fa-user lf-ic" aria-hidden="true"></i>
+            <input id="lfId" name="username" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="name@example.com" enterkeyhint="next" aria-describedby="lfIdErr">
+          </div>
+          <div class="lf-err" id="lfIdErr" role="alert"></div>
+        </div>
+        <div class="lf-field" id="lfPwField">
+          <label for="lfPw">كلمة المرور</label>
+          <div class="lf-input">
+            <i class="fa-solid fa-lock lf-ic" aria-hidden="true"></i>
+            <input id="lfPw" name="password" type="password" autocomplete="current-password" placeholder="••••••••" enterkeyhint="go" aria-describedby="lfPwErr">
+            <button type="button" class="lf-eye" id="lfEye" aria-label="إظهار كلمة المرور" aria-pressed="false"><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <div class="lf-err" id="lfPwErr" role="alert"></div>
+        </div>
+        <button type="submit" class="lf-submit" id="lfSubmit"><span>دخول</span><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></button>
+        <p class="lf-switch">ليس لديك حساب؟ <a href="signup.html">إنشاء حساب جديد</a></p>
+        <div class="lf-demo">
+          <span class="lf-demo-tag">حسابات تجريبية</span>
+          <button type="button" class="lf-chip" data-demo="customer"><i class="fa-solid fa-user"></i> عميل</button>
+          <button type="button" class="lf-chip" data-demo="technician"><i class="fa-solid fa-screwdriver-wrench"></i> أسطى</button>
+          <button type="button" class="lf-chip" data-demo="admin"><i class="fa-solid fa-user-shield"></i> الإدارة</button>
+        </div>
+      </form>
+      <p class="login-foot"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> وضع تجريبي: التحقق يتم داخل المتصفح فقط ولا يوفّر أمانًا حقيقيًا.</p>
+    </main>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+/* ===== Login + Sign-Up: NO-SCROLL SYSTEM =====
+   Rules of the system:
+   1. The page itself never scrolls: html/body are locked to the dynamic viewport (100dvh).
+   2. The shell fills the viewport; the card is a flex column: head | body (flex:1) | foot.
+   3. Sizes use clamp()/vh so everything compresses on short screens instead of overflowing.
+   4. Sign-up is split into 3 steps so each step always fits; errors reserve fixed space (no jumping).
+   5. Last-resort safety: only the form body may scroll internally (tiny landscape phones, huge text). */
+html:has(body.login-mode){ height:100%; overflow:hidden; }
+body.login-mode{ height:100vh; height:100dvh; overflow:hidden; overscroll-behavior:none; }
+body.login-mode #appRoot{ display:none; }
+body:not(.login-mode) .login-screen{ display:none; }
+
+.login-screen{
+  height:100vh; height:100dvh; display:flex; align-items:center; justify-content:center;
+  padding:clamp(8px, 2.5vh, 28px) clamp(10px, 3vw, 28px);
+  background:
+    radial-gradient(circle at 88% 8%, rgba(255,90,0,.40), transparent 45%),
+    radial-gradient(circle at 8% 96%, rgba(255,194,46,.20), transparent 42%),
+    var(--ink);
+}
+.login-shell{
+  width:100%; max-width:440px; max-height:100%; display:grid; grid-template-columns:1fr; grid-template-rows:minmax(0,1fr);
+  background:#fff; border-radius:22px; overflow:hidden; box-shadow:0 30px 70px rgba(0,0,0,.42);
+}
+.login-brand{ display:none; }
+
+/* Card: head | body | foot */
+.login-card{
+  min-height:0; display:flex; flex-direction:column; gap:clamp(6px, 1.4vh, 14px);
+  padding:clamp(14px, 3vh, 36px) clamp(16px, 5vw, 36px) clamp(12px, 2.2vh, 24px);
+  border-top:4px solid var(--brass);
+}
+.login-head{ flex:none; text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.login-logo{ background:var(--ink); border-radius:14px; padding:6px 16px; }
+.login-logo img{ display:block; height:clamp(34px, 6.5vh, 54px); width:auto; aspect-ratio:881/535; object-fit:contain; }
+.login-head h1{ font-family:var(--disp); font-weight:900; font-size:clamp(20px, 3.4vh, 26px); line-height:1.2; margin-top:4px; }
+.login-head p{ color:#7a7a7a; font-size:clamp(12.5px, 1.9vh, 14.5px); }
+
+/* Body: takes the remaining height, scrolls internally only as a safety net */
+.login-form{
+  flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:clamp(4px, 1vh, 10px);
+  overflow-y:auto; overflow-x:hidden; scrollbar-width:none; overscroll-behavior:contain;
+}
+.login-form::-webkit-scrollbar{ display:none; }
+.login-form > .lf-spacer{ flex:1 1 0; min-height:0; }
+
+.lf-field label{ display:block; font-size:13px; font-weight:700; margin-bottom:5px; }
+.lf-input{ position:relative; }
+.lf-input input{
+  width:100%; height:clamp(42px, 6.6vh, 50px); border:1.5px solid var(--line); border-radius:12px; background:var(--paper-2);
+  padding:0 42px; font-size:16px; color:var(--ink); font-family:inherit; transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.lf-input input:focus{ outline:none; border-color:var(--brass); background:#fff; box-shadow:0 0 0 4px rgba(255,90,0,.14); }
+.lf-ic{ position:absolute; top:50%; right:14px; transform:translateY(-50%); color:#9a9a9a; font-size:14px; pointer-events:none; transition:color .15s; }
+.lf-input:focus-within .lf-ic{ color:var(--brass); }
+.lf-eye{ position:absolute; top:50%; left:4px; transform:translateY(-50%); width:40px; height:38px; background:transparent; color:#7a7a7a; border-radius:10px; font-size:15px; }
+.lf-eye:hover{ color:var(--brass); background:rgba(255,90,0,.08); }
+.lf-field.has-error .lf-input input{ border-color:var(--red); background:#fff; }
+.lf-field.has-error .lf-input input:focus{ box-shadow:0 0 0 4px rgba(229,72,77,.16); }
+/* Error slot always reserves its height, so showing an error never pushes content off-screen */
+.lf-err{ height:17px; margin-top:3px; font-size:12px; line-height:17px; color:var(--red); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.lf-submit{
+  flex:none; height:clamp(44px, 6.8vh, 52px); border-radius:12px; background:linear-gradient(135deg, var(--brass), var(--brass-2)); color:#fff; font-size:16px; font-weight:800; font-family:var(--disp);
+  display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 10px 22px rgba(255,90,0,.30); transition:transform .1s, box-shadow .15s, filter .15s;
+}
+.lf-submit:hover{ filter:brightness(1.05); box-shadow:0 12px 26px rgba(255,90,0,.38); }
+.lf-submit:active{ transform:scale(.99); }
+.lf-submit:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
+.lf-switch{ flex:none; text-align:center; font-size:13.5px; color:#555; }
+.lf-switch a{ color:var(--brass); font-weight:800; text-decoration:none; }
+.lf-switch a:hover{ text-decoration:underline; }
+
+.lf-demo{ flex:none; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; padding-top:clamp(6px, 1.3vh, 12px); border-top:1px dashed var(--line); }
+.lf-demo-tag{ font-size:12px; color:#7a7a7a; margin-inline-end:2px; }
+.lf-chip{ background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:4px 11px; font-size:12px; font-weight:700; color:var(--ink); display:inline-flex; align-items:center; gap:6px; }
+.lf-chip i{ font-size:11px; color:var(--brass); }
+.lf-chip:hover{ border-color:var(--brass); color:var(--brass); }
+.login-foot{ flex:none; font-size:11px; color:#9a9a9a; text-align:center; line-height:1.4; }
+.login-foot i{ color:var(--amber); }
+
+/* ---------- Sign-up: stepper ---------- */
+.su-progress{ flex:none; display:flex; flex-direction:column; gap:6px; }
+.su-progress-top{ display:flex; justify-content:space-between; font-size:12.5px; font-weight:800; color:#7a7a7a; }
+.su-progress-top b{ color:var(--brass); }
+.su-bars{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.su-bars i{ height:5px; border-radius:99px; background:var(--line); transition:background .25s; }
+.su-bars i.on{ background:var(--brass); }
+
+.su-step{ display:flex; flex-direction:column; gap:clamp(4px, 1vh, 10px); animation:suIn .22s ease both; }
+.su-step[hidden]{ display:none; }
+@keyframes suIn{ from{ opacity:0; transform:translateX(-14px); } to{ opacity:1; transform:none; } }
+.su-step.back{ animation-name:suInBack; }
+@keyframes suInBack{ from{ opacity:0; transform:translateX(14px); } to{ opacity:1; transform:none; } }
+.su-step-title{ font-family:var(--disp); font-weight:800; font-size:15px; }
+
+.lf-role{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.lf-role label{ margin:0; cursor:pointer; }
+.lf-role input{ position:absolute; opacity:0; pointer-events:none; }
+.lf-role span{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:clamp(64px, 11vh, 88px);
+  border:1.5px solid var(--line); border-radius:14px; background:var(--paper-2); font-weight:800; font-size:14px; transition:all .15s;
+}
+.lf-role span i{ font-size:20px; color:#9a9a9a; transition:color .15s; }
+.lf-role input:checked + span{ border-color:var(--brass); background:rgba(255,90,0,.08); color:var(--brass); }
+.lf-role input:checked + span i{ color:var(--brass); }
+.lf-role input:focus-visible + span{ box-shadow:0 0 0 4px rgba(255,90,0,.18); }
+
+.lf-strength{ height:4px; border-radius:99px; background:var(--line); overflow:hidden; margin-top:6px; }
+.lf-strength i{ display:block; height:100%; width:0; border-radius:99px; transition:width .2s, background .2s; }
+.lf-terms{ display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.55; cursor:pointer; padding:8px 10px; border:1.5px solid var(--line); border-radius:12px; background:var(--paper-2); }
+.lf-terms input{ width:20px; height:20px; margin-top:1px; accent-color:var(--brass); flex-shrink:0; }
+.lf-terms a{ color:var(--brass); font-weight:800; }
+.lf-field.has-error .lf-terms{ border-color:var(--red); background:#fff; }
+.lf-success{ background:rgba(29,184,106,.10); border:1.5px solid rgba(29,184,106,.35); color:#13794A; border-radius:12px; padding:8px 12px; font-size:13px; font-weight:700; display:none; }
+.lf-success.show{ display:block; }
+
+.su-actions{ flex:none; display:grid; grid-template-columns:auto 1fr; gap:8px; }
+.su-actions .lf-back{
+  height:clamp(44px, 6.8vh, 52px); padding:0 18px; border-radius:12px; background:var(--paper-2); border:1.5px solid var(--line);
+  font-weight:800; font-size:14.5px; color:var(--ink); display:inline-flex; align-items:center; gap:8px;
+}
+.su-actions .lf-back:hover{ border-color:var(--brass); color:var(--brass); }
+.su-actions .lf-back[hidden]{ display:none; }
+.su-actions:has(.lf-back[hidden]){ grid-template-columns:1fr; }
+
+/* Terms dialog */
+.terms-modal{ position:fixed; inset:0; z-index:400; background:rgba(10,10,10,.7); display:none; align-items:center; justify-content:center; padding:16px; }
+.terms-modal.open{ display:flex; }
+.terms-box{ background:#fff; border-radius:18px; max-width:520px; width:100%; max-height:88vh; max-height:88dvh; display:flex; flex-direction:column; overflow:hidden; }
+.terms-box h3{ font-family:var(--disp); padding:14px 20px; border-bottom:1px solid var(--line); font-size:17px; }
+.terms-body{ padding:12px 20px; overflow:auto; font-size:14px; line-height:1.75; }
+.terms-body h4{ font-weight:800; margin:8px 0 2px; color:var(--brass); }
+.terms-box .terms-close{ margin:10px 20px 14px; height:44px; border-radius:12px; background:var(--ink); color:#fff; font-weight:800; }
+
+/* ---------- Short screens: drop non-essentials instead of scrolling ---------- */
+@media (max-height:700px){ .login-head p{ display:none; } .login-foot{ display:none; } }
+@media (max-height:600px){ .lf-demo-tag{ display:none; } .lf-field label{ margin-bottom:3px; } .lf-switch{ font-size:12.5px; } }
+@media (max-height:520px){ .login-logo--mobile{ display:none; } .login-head h1{ margin-top:0; } .login-card{ border-top-width:3px; } }
+@media (max-height:520px) and (min-width:560px){
+  .su-step{ display:grid; grid-template-columns:1fr 1fr; column-gap:12px; align-items:start; }
+  .su-step[hidden]{ display:none; }
+  .su-step > #suTermsField, .su-step > .lf-success{ grid-column:1 / -1; }
+  .lf-strength{ display:none; }
+  .lf-input input{ height:40px; }
+}
+@media (max-width:360px){ .lf-demo-tag{ display:none; } }
+
+/* ---------- Desktop: brand panel next to the form ---------- */
+@media (min-width:900px){
+  .login-shell{ max-width:960px; grid-template-columns:1.05fr 1fr; }
+  .login-shell.is-signup{ max-width:1020px; }
+  .login-brand{
+    min-height:0; display:flex; flex-direction:column; justify-content:center; gap:clamp(8px, 2vh, 16px); padding:clamp(20px, 5vh, 40px) clamp(24px, 3.5vw, 40px);
+    color:#fff; background:linear-gradient(160deg, #262628, var(--ink)); position:relative; overflow:hidden;
+  }
+  .login-brand::before{ content:""; position:absolute; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle, rgba(255,90,0,.45), transparent 68%); top:-110px; left:-110px; }
+  .login-brand > *{ position:relative; }
+  .login-brand .login-logo{ align-self:flex-start; background:rgba(255,255,255,.06); }
+  .login-brand h2{ font-family:var(--disp); font-weight:900; font-size:clamp(22px, 4vh, 30px); line-height:1.35; }
+  .login-brand p{ color:rgba(255,255,255,.75); font-size:clamp(13px, 2vh, 15px); line-height:1.75; }
+  .login-points{ list-style:none; display:flex; flex-direction:column; gap:clamp(6px, 1.4vh, 10px); margin-top:4px; font-weight:700; font-size:clamp(13px, 2vh, 14.5px); }
+  .login-points i{ color:var(--amber); margin-inline-end:8px; }
+  .login-logo--mobile{ display:none; }
+  .login-card{ border-top:0; }
+}
+@media (min-width:900px) and (max-height:600px){ .login-brand p, .login-points{ display:none; } }
+@media (prefers-reduced-motion:reduce){ *{ transition:none !important; animation:none !important; } }
